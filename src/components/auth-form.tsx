@@ -1,27 +1,70 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { createBrowserClient } from '@supabase/ssr'
+import { useRouter } from 'next/navigation'
 import { Github } from 'lucide-react'
 
 export function AuthForm() {
-  const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const supabase = createClient()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+    setError(null)
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-      if (error) throw error
-    } catch (error) {
-      console.error('Error signing in:', error)
+
+      if (error) {
+        throw error
+      }
+
+      // Force a router refresh to update auth state
+      router.refresh()
+      
+      // Redirect to dashboard
+      router.push('/dashboard')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSignUp = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        throw error
+      }
+
+      // Show success message or handle verification email sent
+      setError('Check your email for the verification link')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up')
     } finally {
       setIsLoading(false)
     }
@@ -45,6 +88,12 @@ export function AuthForm() {
 
   return (
     <div className="space-y-6 w-full max-w-md">
+      {error && (
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <p className="text-sm text-red-500">{error}</p>
+        </div>
+      )}
+
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Welcome back</h1>
         <p className="text-gray-400">Sign in to your account to continue</p>
@@ -112,7 +161,11 @@ export function AuthForm() {
 
       <p className="text-center text-sm text-gray-400">
         Don't have an account?{' '}
-        <button onClick={() => supabase.auth.signUp({ email, password })} className="text-purple-500 hover:text-purple-400">
+        <button 
+          onClick={handleSignUp} 
+          disabled={isLoading}
+          className="text-purple-500 hover:text-purple-400"
+        >
           Sign up
         </button>
       </p>
