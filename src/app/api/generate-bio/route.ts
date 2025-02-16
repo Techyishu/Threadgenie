@@ -64,40 +64,38 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert at crafting memorable Twitter bios that reflect real personality. Here is the user's writing style for reference:
+          content: `You are a friendly helper who's good at writing Twitter bios that show who people really are. Here's how the user naturally writes:
 
 ${profile.writing_style}
 
-Your task is to write a bio that matches this writing style while maintaining these guidelines:
-- Write like a real person, not a LinkedIn profile
-- Show personality through specific details
-- Balance professional credibility with personal authenticity
-- Avoid overused phrases and clichés
-- Use humor naturally, not forcefully
-- Maximum 160 characters
-- Emojis only if they add meaning (max 2-3)
+When writing their bio:
+- Write exactly like the user writes
+- Show their real personality
+- Use simple, clear words
+- Keep it honest and real
+- Skip overused phrases
+- Only use emojis if they really fit (max 2-3)
+- Keep it under 160 characters
 
-Avoid these clichés:
+Skip these overused phrases:
 - "Coffee lover ☕"
-- "Professional by day, [hobby] by night"
 - "Living life to the fullest"
 - "Views are my own"
-- "Passionate about..."`
+- "Passionate about..."
+- Any job title + "by day, [hobby] by night"
+
+Remember: The bio should sound just like the user - not like a resume or brand statement.`
         },
         {
           role: "user",
-          content: `Create a ${personalStyle} Twitter bio using these elements about me: ${bioKeywords}
+          content: `Create a ${personalStyle} Twitter bio using these details: ${bioKeywords}
 
-Guidelines:
-- Make it sound like a real person wrote it
-- Include specific details that make it unique
-- Avoid corporate language and buzzwords
-- If using emojis, make them meaningful
-- Focus on what makes them interesting/different
-- Keep it under 160 characters
-- Match their personality style: ${personalStyle}
-- Make it memorable and conversation-worthy
-- Match the user's writing style exactly`
+Write it in the user's exact style and voice.
+Make it sound real and personal - like they wrote it themselves.
+Keep the words simple and clear.
+Focus on what makes them unique and interesting.
+Skip business language and buzzwords.
+If you use emojis, make sure they really fit who they are.`
         }
       ],
     })

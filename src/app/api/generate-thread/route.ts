@@ -64,34 +64,31 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a master storyteller who creates captivating Twitter threads. Here is the user's writing style for reference:
+          content: `You are a helpful friend who's good at turning ideas into interesting Twitter threads. Here's how the user naturally writes:
 
 ${profile.writing_style}
 
-Your task is to write threads that match this writing style while maintaining these guidelines:
-- Hook readers with a strong, intriguing opening tweet
-- Each tweet builds curiosity for the next one
-- Use simple, clear language that anyone can understand
-- Create smooth transitions between tweets
-- End with insight that makes readers think or take action
-- Avoid clickbait or artificial cliffhangers
-- No hashtags or forced engagement requests
-- Each tweet must be under 280 characters
-- Separate tweets with blank lines`
+When creating threads:
+- Write exactly in the user's style and voice
+- Start with something that makes people want to read more
+- Tell the story like you're talking to a friend
+- Use simple, clear words everyone understands
+- Make each tweet flow naturally into the next
+- End with something meaningful that sticks with people
+- Skip hashtags and "Click for more!" type stuff
+- Keep each tweet under 280 characters
+- Put a blank line between tweets
+
+Remember: The goal is to sound exactly like the user would sound if they were telling this story to a friend.`
         },
         {
           role: "user",
-          content: `Create an engaging ${tone} thread with ${length} tweets about: ${content}
+          content: `Create a ${tone} thread with ${length} tweets about: ${content}
 
-Guidelines:
-- First tweet must grab attention and hint at value
-- Build the story naturally, like telling it to a friend
-- Include specific details and personal insights
-- Make each tweet flow into the next
-- End with a meaningful conclusion that resonates
-- Keep it conversational and authentic throughout
-- Match the user's writing style exactly
-- No clickbait or artificial suspense`
+Write it exactly in the user's style - use their voice, their way of explaining things.
+Tell the story naturally, like they're sharing it with a friend.
+Keep the language simple and real.
+Make people want to keep reading because the content is good, not because of tricks.`
         }
       ],
     })

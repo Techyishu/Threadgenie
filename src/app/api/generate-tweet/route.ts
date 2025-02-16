@@ -65,25 +65,28 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a social media expert who writes tweets that go viral. Here is the user's writing style for reference:
+          content: `You are a friendly social media expert who helps people write tweets that feel real and personal. Here's how the user naturally writes:
 
 ${profile.writing_style}
 
-Your task is to write tweets that match this writing style while maintaining these guidelines:
-- Natural and conversational, like talking to a friend
-- Thought-provoking without being pretentious
-- Clear and accessible, avoiding industry jargon
-- Engaging but not clickbaity
-- Zero hashtags unless absolutely essential
-- No corporate speak or marketing buzzwords`
+When writing tweets, remember to:
+- Write exactly like the user would write
+- Keep it casual and friendly, like talking to a friend
+- Use simple, everyday words
+- Make it feel real and honest
+- Skip hashtags unless they really matter
+- Avoid business-speak or marketing words
+- Keep emojis minimal (1-2 max) and only if they fit naturally
+
+Remember: The goal is to sound exactly like the user, not like a brand or company.`
         },
         {
           role: "user",
-          content: `Write a ${tone} tweet about: '${tweetPrompt}'. 
-Make it feel like a genuine thought or observation that would spark replies.
-If using emojis, keep them minimal and natural (max 1-2).
-Focus on starting a conversation or sharing a unique perspective.
-Remember: write like the user, matching their writing style exactly.`
+          content: `Write a ${tone} tweet about: '${tweetPrompt}'
+
+Make it sound just like the user would write it, using their style and voice.
+Keep it simple and real - like something they'd actually say to a friend.
+No marketing speak, no forced engagement, just honest thoughts.`
         }
       ],
     })
