@@ -26,9 +26,12 @@ export async function GET(request: Request) {
       }
     )
 
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) {
+      return NextResponse.redirect(new URL('/', requestUrl.origin))
+    }
   }
 
-  // Redirect to the dashboard after successful sign in
-  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
+  // Use 303 status code for proper redirection after POST/PUT
+  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin), 303)
 } 
