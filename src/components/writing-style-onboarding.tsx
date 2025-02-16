@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, FormEvent, ChangeEvent } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void }) {
@@ -13,7 +13,7 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -42,6 +42,10 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
     }
   }
 
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setWritingStyle(e.target.value)
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6 bg-[#1a1f2d] rounded-2xl border border-gray-800/50">
       <h2 className="text-2xl font-bold mb-4">Define Your Writing Style</h2>
@@ -54,7 +58,7 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
         <div>
           <textarea
             value={writingStyle}
-            onChange={(e) => setWritingStyle(e.target.value)}
+            onChange={handleChange}
             className="w-full h-64 bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Start writing here..."
             required
