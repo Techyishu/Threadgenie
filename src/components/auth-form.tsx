@@ -10,6 +10,8 @@ export function AuthForm() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const router = useRouter()
   
   const supabase = createBrowserClient(
@@ -21,6 +23,7 @@ export function AuthForm() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setSuccessMessage(null)
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -28,14 +31,9 @@ export function AuthForm() {
         password,
       })
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
-      // Force a router refresh to update auth state
       router.refresh()
-      
-      // Redirect to dashboard
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
@@ -44,9 +42,11 @@ export function AuthForm() {
     }
   }
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setSuccessMessage(null)
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -57,12 +57,10 @@ export function AuthForm() {
         }
       })
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
-      // Show success message or handle verification email sent
-      setError('Check your email for the verification link')
+      setSuccessMessage('Check your email for the confirmation link')
+      // Don't clear form in case they need to try again
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up')
     } finally {
@@ -87,88 +85,74 @@ export function AuthForm() {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-md">
-      {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <p className="text-sm text-red-500">{error}</p>
-        </div>
-      )}
-
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Welcome back</h1>
-        <p className="text-gray-400">Sign in to your account to continue</p>
+    <div className="w-full max-w-md space-y-8 px-4">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
+        <p className="mt-2 text-gray-400">
+          {isSignUp ? 'Sign up to get started' : 'Sign in to your account'}
+        </p>
       </div>
-      
-      <div className="space-y-4">
-        <button
-          onClick={handleGithubSignIn}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg px-4 py-2.5 transition duration-150"
-        >
-          <Github className="w-5 h-5" />
-          Continue with Github
-        </button>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#0a0a0a] px-2 text-gray-400">Or continue with</span>
-          </div>
-        </div>
-
-        <form onSubmit={handleEmailSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-200" htmlFor="email">
-              Email
+      <form onSubmit={isSignUp ? handleSignUp : handleEmailSignIn} className="mt-8 space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+              Email address
             </label>
             <input
               id="email"
               type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
+              className="mt-1 block w-full rounded-md bg-[#0d1117] border border-gray-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-200" htmlFor="password">
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
               Password
             </label>
             <input
               id="password"
               type="password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
+              className="mt-1 block w-full rounded-md bg-[#0d1117] border border-gray-800 text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 rounded-lg transition duration-150"
-          >
-            {isLoading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
-      </div>
+        {error && (
+          <div className="text-red-500 text-sm">{error}</div>
+        )}
 
-      <p className="text-center text-sm text-gray-400">
-        Don't have an account?{' '}
-        <button 
-          onClick={handleSignUp} 
+        {successMessage && (
+          <div className="text-green-500 text-sm">{successMessage}</div>
+        )}
+
+        <button
+          type="submit"
           disabled={isLoading}
-          className="text-purple-500 hover:text-purple-400"
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign up
+          {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
         </button>
-      </p>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp)
+              setError(null)
+              setSuccessMessage(null)
+            }}
+            className="text-sm text-blue-500 hover:text-blue-400"
+          >
+            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
+        </div>
+      </form>
     </div>
   )
 } 
