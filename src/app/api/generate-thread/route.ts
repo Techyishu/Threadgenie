@@ -94,7 +94,19 @@ Make people want to keep reading because the content is good, not because of tri
     })
 
     const threadText = completion.choices[0].message.content || ''
-    const tweets = threadText.split('\n\n').filter(tweet => tweet.trim())
+
+    // Improved tweet splitting with fallback
+    let tweets = threadText.split('\n\n').filter(tweet => tweet.trim())
+
+    // If empty, try alternative splitting methods
+    if (tweets.length === 0) {
+      tweets = threadText.split('\n').filter(tweet => tweet.trim())
+    }
+
+    // Final safety check
+    if (tweets.length === 0) {
+      tweets = [threadText]  // Fallback to single tweet
+    }
 
     // Store in history
     await supabase.from('generated_content').insert({
