@@ -21,6 +21,10 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError) throw userError
+      
+      if (!user) {
+        throw new Error('Not authenticated')
+      }
 
       const { error: updateError } = await supabase
         .from('user_profiles')
