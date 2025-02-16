@@ -32,6 +32,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's writing style
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('writing_style')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile?.writing_style) {
+      return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
+    }
+
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
     
@@ -53,7 +64,11 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert at crafting memorable Twitter bios that reflect real personality. Your approach:
+          content: `You are an expert at crafting memorable Twitter bios that reflect real personality. Here is the user's writing style for reference:
+
+${profile.writing_style}
+
+Your task is to write a bio that matches this writing style while maintaining these guidelines:
 - Write like a real person, not a LinkedIn profile
 - Show personality through specific details
 - Balance professional credibility with personal authenticity
@@ -67,11 +82,7 @@ Avoid these clichés:
 - "Professional by day, [hobby] by night"
 - "Living life to the fullest"
 - "Views are my own"
-- "Passionate about..."
-
-Good examples:
-"Building AI tools that don't skynet us • Dad jokes are my love language • NYC 🗽"
-"Teaching computers to be less confused • Author of 'Debug Your Mind' • Ask me about my rubber duck collection 🦆"`
+- "Passionate about..."`
         },
         {
           role: "user",
@@ -85,7 +96,8 @@ Guidelines:
 - Focus on what makes them interesting/different
 - Keep it under 160 characters
 - Match their personality style: ${personalStyle}
-- Make it memorable and conversation-worthy`
+- Make it memorable and conversation-worthy
+- Match the user's writing style exactly`
         }
       ],
     })

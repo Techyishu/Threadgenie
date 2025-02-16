@@ -33,6 +33,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's writing style
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('writing_style')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile?.writing_style) {
+      return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
+    }
+
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
     
@@ -54,21 +65,17 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a social media expert who writes tweets that go viral. Your style is:
+          content: `You are a social media expert who writes tweets that go viral. Here is the user's writing style for reference:
+
+${profile.writing_style}
+
+Your task is to write tweets that match this writing style while maintaining these guidelines:
 - Natural and conversational, like talking to a friend
 - Thought-provoking without being pretentious
 - Clear and accessible, avoiding industry jargon
 - Engaging but not clickbaity
 - Zero hashtags unless absolutely essential
-- No corporate speak or marketing buzzwords
-
-Examples of good tweets:
-"Just realized my best code is written at 2 AM. My worst code is also written at 2 AM. It's a mystery 🤔"
-"Hot take: Documentation isn't just about helping others. Future you is the first person you're writing it for."
-
-Examples to avoid:
-"10 MIND-BLOWING JavaScript hacks that will 100x your productivity! 🚀 #coding #javascript #webdev"
-"Leveraging synergistic opportunities in the digital transformation space"`
+- No corporate speak or marketing buzzwords`
         },
         {
           role: "user",
@@ -76,7 +83,7 @@ Examples to avoid:
 Make it feel like a genuine thought or observation that would spark replies.
 If using emojis, keep them minimal and natural (max 1-2).
 Focus on starting a conversation or sharing a unique perspective.
-Remember: write like a real person, not a brand.`
+Remember: write like the user, matching their writing style exactly.`
         }
       ],
     })

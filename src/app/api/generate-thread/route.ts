@@ -32,6 +32,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's writing style
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('writing_style')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile?.writing_style) {
+      return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
+    }
+
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
     
@@ -42,7 +53,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { content, tone = 'casual', length = '3' } = await request.json()
+    const { content, tone = 'casual', length = '5' } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Missing content' }, { status: 400 })
@@ -53,7 +64,11 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a master storyteller who creates captivating Twitter threads. Your approach:
+          content: `You are a master storyteller who creates captivating Twitter threads. Here is the user's writing style for reference:
+
+${profile.writing_style}
+
+Your task is to write threads that match this writing style while maintaining these guidelines:
 - Hook readers with a strong, intriguing opening tweet
 - Each tweet builds curiosity for the next one
 - Use simple, clear language that anyone can understand
@@ -62,15 +77,7 @@ export async function POST(request: Request) {
 - Avoid clickbait or artificial cliffhangers
 - No hashtags or forced engagement requests
 - Each tweet must be under 280 characters
-- Separate tweets with blank lines
-
-Thread Structure:
-1. Opening tweet: Hook + Promise of value
-2. Middle tweets: Deliver value through story/insights
-3. Final tweet: Key takeaway + natural conclusion
-
-Example opening: "I spent 6 months building a startup that failed. But the real story isn't the failure - it's what happened next..."
-Bad example: "🚨 THREAD: 10 SHOCKING secrets about startup life! You won't BELIEVE #3! 🧵👇"`
+- Separate tweets with blank lines`
         },
         {
           role: "user",
@@ -83,6 +90,7 @@ Guidelines:
 - Make each tweet flow into the next
 - End with a meaningful conclusion that resonates
 - Keep it conversational and authentic throughout
+- Match the user's writing style exactly
 - No clickbait or artificial suspense`
         }
       ],
@@ -107,7 +115,10 @@ Guidelines:
       // Continue with the response even if increment fails
     }
 
-    return NextResponse.json({ tweets, remainingGenerations: remainingGenerations - 1 })
+    return NextResponse.json({ 
+      thread: tweets, 
+      remainingGenerations: remainingGenerations - 1 
+    })
   } catch (error) {
     console.error('Thread generation error:', error)
     return NextResponse.json(
