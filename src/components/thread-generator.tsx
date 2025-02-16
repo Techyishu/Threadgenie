@@ -29,13 +29,22 @@ export function ThreadGenerator() {
       const data = await response.json()
       
       if (response.ok) {
-        setThread(data.tweets)
+        if (Array.isArray(data.thread)) {
+          setThread(data.thread)
+        } else {
+          setThread(data.thread ? [data.thread] : [])
+        }
         setRemainingGenerations(data.remainingGenerations)
       } else {
+        if (data.error === 'Daily generation limit reached. Upgrade to Pro for unlimited generations.') {
+          setIsPricingOpen(true)
+        }
         setError(data.error)
+        setThread([])
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
+      setThread([])
     } finally {
       setLoading(false)
     }
@@ -81,7 +90,8 @@ export function ThreadGenerator() {
               >
                 <option value="casual">Casual</option>
                 <option value="professional">Professional</option>
-                <option value="humorous">Humorous</option>
+                <option value="funny">Funny</option>
+                <option value="serious">Serious</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,6 +113,7 @@ export function ThreadGenerator() {
                 <option value="3">3 tweets</option>
                 <option value="5">5 tweets</option>
                 <option value="7">7 tweets</option>
+                <option value="10">10 tweets</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
