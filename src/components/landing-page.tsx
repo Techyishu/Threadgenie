@@ -376,7 +376,7 @@ export function LandingPage() {
                 Hey! I'm a 25 year old software developer who loves building products. 
                 When I'm not at my day job, you'll find me crafting tools like ThreadGenius 
                 that make content creation more intuitive. Follow my journey and behind-the-scenes 
-                updates on X - <a href="https://twitter.com/yourusername" className="text-blue-400 hover:text-blue-300 transition-colors">@yourusername</a>
+                updates on X - <a href="https://twitter.com/WiredTechie" className="text-blue-400 hover:text-blue-300 transition-colors">@WiredTechie</a>
               </p>
               <p className="text-gray-400">Thanks for checking out ThreadGenius!</p>
             </div>
@@ -386,7 +386,7 @@ export function LandingPage() {
                 © 2024 ThreadGenius - All Rights Reserved
               </div>
               <a 
-                href="https://twitter.com/yourusername"
+                href="https://twitter.com/WiredTechie"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
