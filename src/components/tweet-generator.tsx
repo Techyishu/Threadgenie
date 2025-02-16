@@ -44,11 +44,6 @@ export function TweetGenerator() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold">Tweet Generator</h3>
-        {remainingGenerations !== null && (
-          <div className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-500">
-            {remainingGenerations} generations remaining today
-          </div>
-        )}
       </div>
 
       <div>
