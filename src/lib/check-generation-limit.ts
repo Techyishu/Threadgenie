@@ -1,6 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+type GenerationLimitResponse = {
+  can_generate: boolean;
+  remaining_generations: number;
+}
+
 export async function checkGenerationLimit(userId: string) {
   const cookieStore = cookies()
   const supabase = createServerClient(
@@ -30,8 +35,8 @@ export async function checkGenerationLimit(userId: string) {
   }
 
   return {
-    canGenerate: data.can_generate,
-    remainingGenerations: data.remaining_generations
+    canGenerate: (data as GenerationLimitResponse).can_generate,
+    remainingGenerations: (data as GenerationLimitResponse).remaining_generations
   }
 }
 
