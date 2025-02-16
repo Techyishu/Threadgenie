@@ -2,7 +2,7 @@ import { openai } from '@/lib/openai'
 import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { checkGenerationLimit, incrementGenerationCount } from '@/lib/check-generation-limit'
+import { checkGenerationLimit } from '@/lib/check-generation-limit'
 
 export async function POST(request: Request) {
   try {
@@ -109,14 +109,6 @@ If you use emojis, make sure they really fit who they are.`
       generated_text: bio,
       type: 'bio'
     })
-
-    try {
-      // Increment usage count before returning
-      await incrementGenerationCount(user.id)
-    } catch (error) {
-      console.error('Failed to increment generation count:', error)
-      // Continue with the response even if increment fails
-    }
 
     return NextResponse.json({ bio, remainingGenerations: remainingGenerations - 1 })
   } catch (error) {
