@@ -2,6 +2,7 @@ import { openai } from '@/lib/openai'
 import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { checkGenerationLimit, incrementGenerationCount } from '@/lib/check-generation-limit'
 
 export async function POST(request: Request) {
   try {
@@ -29,6 +30,16 @@ export async function POST(request: Request) {
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check generation limit
+    const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
+    
+    if (!canGenerate) {
+      return NextResponse.json(
+        { error: 'Daily generation limit reached. Upgrade to Pro for unlimited generations.' },
+        { status: 403 }
+      )
     }
 
     const { content, tone = 'casual', length = '3' } = await request.json()
@@ -88,11 +99,19 @@ Guidelines:
       type: 'thread'
     })
 
-    return NextResponse.json({ tweets })
+    try {
+      // Increment usage count before returning
+      await incrementGenerationCount(user.id)
+    } catch (error) {
+      console.error('Failed to increment generation count:', error)
+      // Continue with the response even if increment fails
+    }
+
+    return NextResponse.json({ tweets, remainingGenerations: remainingGenerations - 1 })
   } catch (error) {
     console.error('Thread generation error:', error)
     return NextResponse.json(
-      { error: 'Failed to generate thread' },
+      { error: error instanceof Error ? error.message : 'Failed to generate thread' },
       { status: 500 }
     )
   }

@@ -2,6 +2,7 @@ import { openai } from '@/lib/openai'
 import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { checkGenerationLimit, incrementGenerationCount } from '@/lib/check-generation-limit'
 
 export async function POST(request: Request) {
   try {
@@ -25,11 +26,20 @@ export async function POST(request: Request) {
       }
     )
 
-    // Get authenticated user instead of just session
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check generation limit
+    const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
+    
+    if (!canGenerate) {
+      return NextResponse.json(
+        { error: 'Daily generation limit reached. Upgrade to Pro for unlimited generations.' },
+        { status: 403 }
+      )
     }
 
     const { bioKeywords, personalStyle = 'professional' } = await request.json()
@@ -84,17 +94,25 @@ Guidelines:
 
     // Store in history
     await supabase.from('generated_content').insert({
-      user_id: user.id,  // Updated to use user.id
+      user_id: user.id,
       prompt: bioKeywords,
       generated_text: bio,
       type: 'bio'
     })
 
-    return NextResponse.json({ bio })
+    try {
+      // Increment usage count before returning
+      await incrementGenerationCount(user.id)
+    } catch (error) {
+      console.error('Failed to increment generation count:', error)
+      // Continue with the response even if increment fails
+    }
+
+    return NextResponse.json({ bio, remainingGenerations: remainingGenerations - 1 })
   } catch (error) {
     console.error('Bio generation error:', error)
     return NextResponse.json(
-      { error: 'Failed to generate bio' },
+      { error: error instanceof Error ? error.message : 'Failed to generate bio' },
       { status: 500 }
     )
   }

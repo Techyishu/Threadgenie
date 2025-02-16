@@ -5,34 +5,47 @@ import { ThreadGenerator } from './thread-generator'
 import { TweetGenerator } from './tweet-generator'
 import { BioGenerator } from './bio-generator'
 
-type Tab = 'thread' | 'tweet' | 'bio'
-
 export function ContentTabs() {
-  const [activeTab, setActiveTab] = useState<Tab>('thread')
+  const [activeTab, setActiveTab] = useState('thread')
 
   return (
-    <div className="space-y-4">
-      <div className="flex space-x-4 border-b border-gray-800">
-        {(['thread', 'tweet', 'bio'] as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 ${
-              activeTab === tab
-                ? 'text-white bg-[#1a1f2d] rounded-t-lg border-b-2 border-blue-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
+    <div className="space-y-6">
+      <div className="flex gap-4 border-b border-gray-800">
+        <button
+          onClick={() => setActiveTab('thread')}
+          className={`pb-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'thread' 
+              ? 'text-white border-b-2 border-white' 
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Thread Generator
+        </button>
+        <button
+          onClick={() => setActiveTab('tweet')}
+          className={`pb-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'tweet' 
+              ? 'text-white border-b-2 border-white' 
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Tweet Generator
+        </button>
+        <button
+          onClick={() => setActiveTab('bio')}
+          className={`pb-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'bio' 
+              ? 'text-white border-b-2 border-white' 
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Bio Generator
+        </button>
       </div>
 
-      <div className="bg-[#0d1117] rounded-lg p-6">
-        {activeTab === 'thread' && <ThreadGenerator />}
-        {activeTab === 'tweet' && <TweetGenerator />}
-        {activeTab === 'bio' && <BioGenerator />}
-      </div>
+      {activeTab === 'thread' && <ThreadGenerator />}
+      {activeTab === 'tweet' && <TweetGenerator />}
+      {activeTab === 'bio' && <BioGenerator />}
     </div>
   )
 } 

@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&display=swap');
+
 :root {
   --background: #0a0a0a;
   --foreground: #ffffff;
@@ -37,4 +39,9 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #4a5568;
+}
+
+/* Add this to your existing CSS */
+.font-serif {
+  font-family: 'Playfair Display', serif;
 }

@@ -1,13 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { CopyButton } from './copy-button'
+import { PricingModal } from './pricing-modal'
 
 export function TweetGenerator() {
-  const [prompt, setPrompt] = useState('')
+  const [tweetPrompt, setTweetPrompt] = useState('')
   const [tone, setTone] = useState('casual')
   const [loading, setLoading] = useState(false)
-  const [tweet, setTweet] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [tweet, setTweet] = useState<string | null>(null)
+  const [remainingGenerations, setRemainingGenerations] = useState<number | null>(null)
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,13 +22,17 @@ export function TweetGenerator() {
       const response = await fetch('/api/generate-tweet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tweetPrompt: prompt, tone }),
+        body: JSON.stringify({ tweetPrompt, tone }),
       })
 
-      if (!response.ok) throw new Error('Failed to generate tweet')
-
       const data = await response.json()
-      setTweet(data.tweet)
+      
+      if (response.ok) {
+        setTweet(data.tweet)
+        setRemainingGenerations(data.remainingGenerations)
+      } else {
+        setError(data.error)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -34,9 +42,17 @@ export function TweetGenerator() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold">Tweet Generator</h3>
+        {remainingGenerations !== null && (
+          <div className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-500">
+            {remainingGenerations} generations remaining today
+          </div>
+        )}
+      </div>
+
       <div>
-        <h3 className="text-2xl font-bold mb-2">Tweet Generator</h3>
-        <p className="text-gray-400">Create an engaging tweet that captures attention.</p>
+        <p className="text-gray-400">Create engaging single tweets that capture attention.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,8 +61,8 @@ export function TweetGenerator() {
             What would you like to tweet about?
           </label>
           <textarea 
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            value={tweetPrompt}
+            onChange={(e) => setTweetPrompt(e.target.value)}
             className="w-full h-40 bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter your tweet topic or idea..."
             required
@@ -88,11 +104,29 @@ export function TweetGenerator() {
         <div className="text-red-500 text-sm">{error}</div>
       )}
 
+      {error && error.includes('limit reached') && (
+        <div className="bg-blue-500/10 text-blue-500 p-4 rounded-lg">
+          <p>
+            You've reached your daily limit.{' '}
+            <button onClick={() => setIsPricingOpen(true)} className="underline">
+              Upgrade to Pro
+            </button>{' '}
+            for unlimited generations.
+          </p>
+        </div>
+      )}
+
       {tweet && (
         <div className="rounded-lg bg-[#0d1117] border border-gray-800 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-400">{tweet.length} characters</span>
+            <CopyButton text={tweet} />
+          </div>
           <p className="text-white">{tweet}</p>
         </div>
       )}
+
+      <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />
     </div>
   )
 } 

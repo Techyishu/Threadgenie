@@ -1,6 +1,6 @@
 'use client'
 
-import { createClient } from '@/lib/supabase'
+import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { HamburgerMenu } from './hamburger-menu'
@@ -8,7 +8,10 @@ import { PricingModal } from './pricing-modal'
 
 export function Header() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [isPricingOpen, setIsPricingOpen] = useState(false)
 
   const handleSignOut = async () => {
@@ -18,34 +21,20 @@ export function Header() {
 
   return (
     <>
-      <header className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          {/* Desktop View */}
-          <div className="hidden lg:grid lg:grid-cols-3 items-center">
-            <h1 className="text-xl font-bold text-purple-500">ThreadGenius</h1>
-            <nav className="flex justify-center space-x-8">
-              <a href="#" className="text-gray-300 hover:text-white">Home</a>
-              <button 
-                onClick={() => setIsPricingOpen(true)}
-                className="text-gray-300 hover:text-white"
-              >
-                Pricing
-              </button>
-            </nav>
-            <div className="flex justify-end">
-              <button 
-                onClick={handleSignOut}
-                className="text-gray-300 hover:text-white pr-8"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile View */}
-          <div className="flex lg:hidden justify-between items-center">
-            <h1 className="text-xl font-bold text-purple-500">ThreadGenius</h1>
-            <HamburgerMenu onSignOut={handleSignOut} onPricingClick={() => setIsPricingOpen(true)} />
+      <header className="fixed w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <span className="text-2xl font-serif italic text-white">ThreadGenius</span>
+            
+            <button
+              onClick={handleSignOut}
+              className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              Sign out
+              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>
