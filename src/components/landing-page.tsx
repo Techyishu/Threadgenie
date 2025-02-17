@@ -398,9 +398,7 @@ export function LandingPage() {
             <div className="space-y-4">
               <h3 className="text-3xl font-serif italic text-white">Built by Shashank</h3>
               <p className="text-gray-400 max-w-2xl leading-relaxed">
-                Hey! I'm a 25 year old software developer who loves building products. 
-                When I'm not at my day job, you'll find me crafting tools like ThreadGenius 
-                that make content creation more intuitive. Follow my journey and behind-the-scenes 
+                Follow my journey and behind-the-scenes 
                 updates on X - <a href="https://twitter.com/WiredTechie" className="text-blue-400 hover:text-blue-300 transition-colors">@WiredTechie</a>
               </p>
               <p className="text-gray-400">Thanks for checking out ThreadGenius!</p>
@@ -408,7 +406,7 @@ export function LandingPage() {
 
             <div className="flex items-center justify-between pt-8 border-t border-gray-800/50">
               <div className="text-sm text-gray-500">
-                © 2024 ThreadGenius - All Rights Reserved
+                © 2025 ThreadGenius - All Rights Reserved
               </div>
               <a 
                 href="https://twitter.com/WiredTechie"
