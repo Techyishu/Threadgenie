@@ -9,6 +9,13 @@ export function LandingPage() {
   const [showAuth, setShowAuth] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features')
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* Navigation */}
@@ -19,7 +26,12 @@ export function LandingPage() {
               <span className="text-2xl font-serif italic text-white">ThreadGenius</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <button className="text-gray-300 hover:text-white">Features</button>
+              <button 
+                onClick={scrollToFeatures}
+                className="text-gray-300 hover:text-white"
+              >
+                Features
+              </button>
               <button 
                 onClick={() => setShowPricing(true)}
                 className="text-gray-300 hover:text-white"
@@ -66,7 +78,7 @@ export function LandingPage() {
       </div>
 
       {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      <div id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         {/* Features Header */}
         <div className="text-center mb-24">
           <div className="flex items-center justify-center gap-2 mb-6">
