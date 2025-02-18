@@ -30,14 +30,8 @@ export async function GET(request: Request) {
     if (error) {
       return NextResponse.redirect(new URL('/', requestUrl.origin))
     }
-
-    // Wait for session to be established
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
-    }
   }
 
-  // If no code or session, redirect to home
-  return NextResponse.redirect(new URL('/', requestUrl.origin))
+  // Use 303 status code for proper redirection after POST/PUT
+  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin), 303)
 } 
