@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { Github } from 'lucide-react'
@@ -18,6 +18,18 @@ export function AuthForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  useEffect(() => {
+    // Check if user is already authenticated on component mount
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        router.refresh()
+        router.push('/dashboard')
+      }
+    }
+    checkUser()
+  }, [router, supabase.auth])
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,20 +99,23 @@ export function AuthForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError(null)
-    setSuccessMessage(null)
-
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       })
 
       if (error) throw error
+      
+      // No need to manually redirect - the OAuth flow will handle it
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
-    } finally {
       setIsLoading(false)
     }
   }
