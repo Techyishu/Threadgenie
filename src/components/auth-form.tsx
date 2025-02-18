@@ -100,7 +100,6 @@ export function AuthForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError(null)
-    setIsAuthenticating(true)
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -118,7 +117,6 @@ export function AuthForm() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
       setIsLoading(false)
-      setIsAuthenticating(false)
     }
   }
 

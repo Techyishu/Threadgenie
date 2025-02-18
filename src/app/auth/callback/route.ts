@@ -3,8 +3,10 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  // if "next" is in param, use it as the redirect URL
+  const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
     const cookieStore = cookies()
@@ -27,59 +29,25 @@ export async function GET(request: Request) {
     )
 
     try {
-      // Exchange the code for a session
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-      if (exchangeError) {
-        // Handle rate limit error specifically
-        if (exchangeError.status === 429) {
-          console.error('Rate limit reached, waiting before retry')
-          // Add a longer delay for rate limit
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          return NextResponse.redirect(new URL('/auth/callback' + requestUrl.search, requestUrl.origin))
-        }
-        throw exchangeError
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) throw error
+
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
       }
 
-      // Single session check instead of polling
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError) throw sessionError
-
-      if (!session) {
-        throw new Error('Failed to establish session')
-      }
-
-      // Reduced delay since we're not polling
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      // Create response with the redirect
-      const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
-      
-      // Get all cookies including the newly set session cookies
-      const authCookies = cookieStore.getAll()
-      
-      // Properly set all cookies on the response
-      authCookies.forEach(cookie => {
-        if (cookie.name.includes('supabase')) {
-          response.cookies.set({
-            name: cookie.name,
-            value: cookie.value,
-            maxAge: 60 * 60 * 24 * 365, // 1 year
-            path: '/',
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true
-          })
-        }
-      })
-
-      return response
     } catch (error) {
       console.error('Auth callback error:', error)
-      // Add delay before redirecting on error to prevent rapid retries
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return NextResponse.redirect(new URL(`/?error=auth_callback_failed`, requestUrl.origin))
+      return NextResponse.redirect(`${origin}/?error=auth_callback_failed`)
     }
   }
 
-  return NextResponse.redirect(new URL('/', requestUrl.origin))
+  return NextResponse.redirect(`${origin}/?error=no_code`)
 } 
