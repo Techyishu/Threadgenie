@@ -24,13 +24,32 @@ export function AuthForm() {
     router.prefetch('/dashboard')
     
     const checkUser = async () => {
+      // Check for OAuth in progress
+      const oauthInProgress = localStorage.getItem('oauthInProgress')
+      
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Remove router.refresh() since we're already checking the session
+        // Clear the OAuth flag if it exists
+        if (oauthInProgress) {
+          localStorage.removeItem('oauthInProgress')
+        }
         router.push('/dashboard')
       }
     }
     checkUser()
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        router.push('/dashboard')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [router, supabase.auth])
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -102,7 +121,7 @@ export function AuthForm() {
     setIsLoading(true)
     setError(null)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -115,7 +134,9 @@ export function AuthForm() {
 
       if (error) throw error
       
-      // No need to manually redirect - the OAuth flow will handle it
+      // Store a temporary flag in localStorage to indicate ongoing OAuth
+      localStorage.setItem('oauthInProgress', 'true')
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
       setIsLoading(false)

@@ -2,10 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Add dashboard to matcher paths
-  if (!request.nextUrl.pathname.startsWith('/dashboard') && 
-      !request.nextUrl.pathname.startsWith('/auth') &&
-      request.nextUrl.pathname !== '/') {
+  // Skip middleware for auth callback path
+  if (request.nextUrl.pathname === '/auth/callback') {
     return NextResponse.next()
   }
 
@@ -50,6 +48,8 @@ export async function middleware(request: NextRequest) {
 
   // If user is signed in and the current path is /, redirect to /dashboard
   if (session && request.nextUrl.pathname === '/') {
+    // Add a small delay to allow session to be fully established
+    await new Promise(resolve => setTimeout(resolve, 100))
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 
 // Add config to optimize middleware execution
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/auth/:path*']
+  matcher: ['/', '/dashboard/:path*', '/auth/callback']
 } 
