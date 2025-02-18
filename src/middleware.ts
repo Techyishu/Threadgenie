@@ -27,15 +27,19 @@ export async function middleware(request: NextRequest) {
             name,
             value,
             ...options,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true
           })
         },
         remove(name: string, options: CookieOptions) {
-          // Simply set an expired cookie instead of trying to delete
           response.cookies.set({
             name,
             value: '',
             ...options,
-            maxAge: 0
+            maxAge: 0,
+            path: '/'
           })
         },
       },
@@ -43,7 +47,8 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) throw error
 
     // If user is not signed in and the current path is /dashboard, redirect to /
     if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
@@ -58,8 +63,10 @@ export async function middleware(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Middleware auth error:', error)
-    // On auth error, redirect to home
-    return NextResponse.redirect(new URL('/', request.url))
+    // On auth error, clear auth cookies and redirect to home
+    const response = NextResponse.redirect(new URL('/', request.url))
+    response.cookies.set('supabase-auth-token', '', { maxAge: 0, path: '/' })
+    return response
   }
 }
 
