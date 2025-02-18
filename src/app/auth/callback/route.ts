@@ -39,6 +39,9 @@ export async function GET(request: Request) {
         throw new Error('Failed to establish session')
       }
 
+      // Add delay to ensure session is properly propagated
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
       // Create response with the redirect
       const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
       
