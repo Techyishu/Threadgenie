@@ -12,6 +12,7 @@ export function AuthForm() {
   const [error, setError] = useState<string | null>(null)
   const [isSignUp, setIsSignUp] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [isAuthenticating, setIsAuthenticating] = useState(false)
   const router = useRouter()
   
   const supabase = createBrowserClient(
@@ -99,6 +100,7 @@ export function AuthForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError(null)
+    setIsAuthenticating(true)
     try {
       const { error, data } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -113,12 +115,22 @@ export function AuthForm() {
 
       if (error) throw error
       
-      // The OAuth redirect will handle navigation
-      // No need to manually redirect here
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
       setIsLoading(false)
+      setIsAuthenticating(false)
     }
+  }
+
+  if (isAuthenticating) {
+    return (
+      <div className="w-full max-w-md space-y-8 px-4">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-400">Authenticating with Google...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
