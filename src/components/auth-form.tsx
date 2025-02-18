@@ -20,11 +20,13 @@ export function AuthForm() {
   )
 
   useEffect(() => {
-    // Check if user is already authenticated on component mount
+    // Prefetch the dashboard route
+    router.prefetch('/dashboard')
+    
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        router.refresh()
+        // Remove router.refresh() since we're already checking the session
         router.push('/dashboard')
       }
     }
@@ -45,7 +47,7 @@ export function AuthForm() {
 
       if (error) throw error
 
-      router.refresh()
+      // Remove router.refresh() to avoid the extra delay
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')

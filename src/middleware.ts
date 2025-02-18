@@ -2,6 +2,13 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Add dashboard to matcher paths
+  if (!request.nextUrl.pathname.startsWith('/dashboard') && 
+      !request.nextUrl.pathname.startsWith('/auth') &&
+      request.nextUrl.pathname !== '/') {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -49,6 +56,7 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+// Add config to optimize middleware execution
 export const config = {
-  matcher: ['/', '/dashboard'],
+  matcher: ['/', '/dashboard/:path*', '/auth/:path*']
 } 
