@@ -29,9 +29,18 @@ export async function GET(request: Request) {
     try {
       // Exchange the code for a session
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-      if (exchangeError) throw exchangeError
+      if (exchangeError) {
+        // Handle rate limit error specifically
+        if (exchangeError.status === 429) {
+          console.error('Rate limit reached, waiting before retry')
+          // Add a longer delay for rate limit
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          return NextResponse.redirect(new URL('/auth/callback' + requestUrl.search, requestUrl.origin))
+        }
+        throw exchangeError
+      }
 
-      // Explicitly wait for session to be established
+      // Single session check instead of polling
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       if (sessionError) throw sessionError
 
@@ -39,8 +48,8 @@ export async function GET(request: Request) {
         throw new Error('Failed to establish session')
       }
 
-      // Add delay to ensure session is properly propagated
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Reduced delay since we're not polling
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Create response with the redirect
       const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
@@ -50,7 +59,7 @@ export async function GET(request: Request) {
       
       // Properly set all cookies on the response
       authCookies.forEach(cookie => {
-        if (cookie.name.includes('supabase')) {  // Only copy Supabase-related cookies
+        if (cookie.name.includes('supabase')) {
           response.cookies.set({
             name: cookie.name,
             value: cookie.value,
@@ -66,7 +75,8 @@ export async function GET(request: Request) {
       return response
     } catch (error) {
       console.error('Auth callback error:', error)
-      // On error, redirect to home page with error parameter
+      // Add delay before redirecting on error to prevent rapid retries
+      await new Promise(resolve => setTimeout(resolve, 1000))
       return NextResponse.redirect(new URL(`/?error=auth_callback_failed`, requestUrl.origin))
     }
   }
