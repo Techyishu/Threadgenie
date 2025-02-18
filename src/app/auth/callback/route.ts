@@ -26,19 +26,32 @@ export async function GET(request: Request) {
       }
     )
 
-    // Exchange code for session
-    await supabase.auth.exchangeCodeForSession(code)
-    
-    // Explicitly wait for session to be established
-    const { data: { session } } = await supabase.auth.getSession()
-    
-    if (session) {
-      // Add a small delay to ensure session is properly propagated
-      await new Promise(resolve => setTimeout(resolve, 500))
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) throw error
+
+      // Add a small delay to ensure cookies are properly set
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Return a 302 redirect with auth cookies
+      const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
+      
+      // Copy over the auth cookies from supabase response
+      const authCookies = cookieStore.getAll()
+      authCookies.forEach(cookie => {
+        response.cookies.set(cookie.name, cookie.value, {
+          ...cookie,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production'
+        })
+      })
+
+      return response
+    } catch (error) {
+      console.error('Auth error:', error)
+      return NextResponse.redirect(new URL('/', requestUrl.origin))
     }
   }
 
-  // If something goes wrong, redirect to home page
-  return NextResponse.redirect(new URL('/', request.url))
+  return NextResponse.redirect(new URL('/', requestUrl.origin))
 } 
