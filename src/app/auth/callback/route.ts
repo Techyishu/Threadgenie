@@ -30,9 +30,6 @@ export async function GET(request: Request) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) throw error
 
-      // Add a small delay to ensure cookies are properly set
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
       // Return a 302 redirect with auth cookies
       const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
       
