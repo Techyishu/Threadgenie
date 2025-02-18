@@ -2,8 +2,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Skip middleware for auth callback path
-  if (request.nextUrl.pathname === '/auth/callback') {
+  // Don't run middleware on auth callback and api routes
+  if (request.nextUrl.pathname.startsWith('/auth/callback') || 
+      request.nextUrl.pathname.startsWith('/api')) {
     return NextResponse.next()
   }
 
@@ -48,15 +49,21 @@ export async function middleware(request: NextRequest) {
 
   // If user is signed in and the current path is /, redirect to /dashboard
   if (session && request.nextUrl.pathname === '/') {
-    // Add a small delay to allow session to be fully established
-    await new Promise(resolve => setTimeout(resolve, 100))
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response
 }
 
-// Add config to optimize middleware execution
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/auth/callback']
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 } 

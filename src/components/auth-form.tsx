@@ -134,9 +134,6 @@ export function AuthForm() {
 
       if (error) throw error
       
-      // Store a temporary flag in localStorage to indicate ongoing OAuth
-      localStorage.setItem('oauthInProgress', 'true')
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
       setIsLoading(false)
