@@ -23,12 +23,6 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Set both request and response cookies
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
           response.cookies.set({
             name,
             value,
@@ -36,14 +30,12 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.delete({
-            name,
-            ...options,
-          })
+          // Simply set an expired cookie instead of trying to delete
           response.cookies.set({
             name,
             value: '',
             ...options,
+            maxAge: 0
           })
         },
       },
