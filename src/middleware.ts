@@ -2,18 +2,14 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Skip middleware for auth callback and api routes
-  if (request.nextUrl.pathname.startsWith('/auth/callback') || 
-      request.nextUrl.pathname.startsWith('/api')) {
-    return NextResponse.next()
-  }
-
-  let response = NextResponse.next({
+  // Create a response object that we can modify
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
+  // Create the Supabase client
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,7 +19,6 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Ensure refresh token cookie is properly set
           response.cookies.set({
             name,
             value,
@@ -32,7 +27,7 @@ export async function middleware(request: NextRequest) {
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
-            maxAge: name.includes('refresh') ? 60 * 60 * 24 * 365 : undefined // 1 year for refresh token
+            maxAge: name.includes('refresh') ? 60 * 60 * 24 * 365 : undefined
           })
         },
         remove(name: string, options: CookieOptions) {
@@ -49,14 +44,25 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
+    // Get the session
     const { data: { session } } = await supabase.auth.getSession()
 
-    // If user is not signed in and the current path is /dashboard, redirect to /
+    // Handle auth callback route specially
+    if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+      return response
+    }
+
+    // Handle API routes
+    if (request.nextUrl.pathname.startsWith('/api')) {
+      return response
+    }
+
+    // If user is not signed in and trying to access dashboard
     if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    // If user is signed in and the current path is /, redirect to /dashboard
+    // If user is signed in and on the landing page
     if (session && request.nextUrl.pathname === '/') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
@@ -65,12 +71,12 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.error('Middleware auth error:', error)
     // Clear all auth cookies on error
-    const response = NextResponse.redirect(new URL('/', request.url))
+    const errorResponse = NextResponse.redirect(new URL('/', request.url))
     const cookiesToClear = ['access-token', 'refresh-token', 'auth-token']
     cookiesToClear.forEach(name => {
-      response.cookies.set(name, '', { maxAge: 0, path: '/' })
+      errorResponse.cookies.set(name, '', { maxAge: 0, path: '/' })
     })
-    return response
+    return errorResponse
   }
 }
 
@@ -85,4 +91,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-} 
+}
