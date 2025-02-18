@@ -100,7 +100,7 @@ export function AuthForm() {
     setIsLoading(true)
     setError(null)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error, data } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -113,7 +113,8 @@ export function AuthForm() {
 
       if (error) throw error
       
-      // No need to manually redirect - the OAuth flow will handle it
+      // The OAuth redirect will handle navigation
+      // No need to manually redirect here
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in with Google')
       setIsLoading(false)
