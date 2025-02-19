@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
@@ -31,20 +32,22 @@ export async function GET(request: Request) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) throw error
 
-      // Get session to confirm it's established
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Session not established')
-
-      // Add a small delay to ensure session is fully propagated
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocalEnv = process.env.NODE_ENV === 'development'
       
-      // Force redirect to dashboard
-      return NextResponse.redirect(new URL('/dashboard', origin))
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
+
     } catch (error) {
       console.error('Auth callback error:', error)
-      return NextResponse.redirect(new URL('/?error=auth_callback_failed', origin))
+      return NextResponse.redirect(`${origin}/?error=auth_callback_failed`)
     }
   }
 
-  return NextResponse.redirect(new URL('/', origin))
-}
+  return NextResponse.redirect(`${origin}/?error=no_code`)
+} 
