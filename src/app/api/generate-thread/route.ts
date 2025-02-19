@@ -69,15 +69,15 @@ export async function POST(request: Request) {
 ${profile.writing_style}
 
 Guidelines for creating engaging threads:
+- Write EXACTLY ${length} tweets - no more, no less
+- Each tweet MUST be under 280 characters
 - Write EXACTLY like the user - match their tone, humor, and expressions perfectly
 - Use relevant emojis naturally (2-3 per tweet max)
-- Mix in bullet points for lists and key takeaways
 - Start with a hook that grabs attention
 - Keep it conversational and authentic
-- Each tweet should make readers curious about the next
+- Make each tweet build on the previous one
 - Focus on valuable insights and personal experiences
-- Keep tweets under 280 characters
-- Add line breaks between tweets
+- Separate tweets with exactly one blank line
 
 Remember: You ARE the user - write as if they're sharing their thoughts with their followers in their most natural, authentic voice.`
         },
@@ -86,10 +86,10 @@ Remember: You ARE the user - write as if they're sharing their thoughts with the
           content: `Create a ${tone} thread with ${length} tweets about: ${content}
 
 Important:
-- Channel the user's exact personality and writing style
+- Write exactly ${length} tweets to fully explain the topic
+- Each tweet must be under 280 characters
 - Make it feel like a natural conversation
 - Use emojis that fit the context
-- Include bullet points where it makes sense
 - Keep it authentic and engaging
 - Focus on delivering value, not clickbait
 - Write like you're sharing insights with friends`
@@ -99,17 +99,19 @@ Important:
 
     const threadText = completion.choices[0].message.content || ''
 
-    // Improved tweet splitting with fallback
-    let tweets = threadText.split('\n\n').filter(tweet => tweet.trim())
+    // Improved tweet splitting with validation
+    let tweets = threadText.split('\n\n').filter(tweet => {
+      const trimmedTweet = tweet.trim()
+      return trimmedTweet && trimmedTweet.length <= 280
+    })
 
-    // If empty, try alternative splitting methods
-    if (tweets.length === 0) {
-      tweets = threadText.split('\n').filter(tweet => tweet.trim())
-    }
-
-    // Final safety check
-    if (tweets.length === 0) {
-      tweets = [threadText]  // Fallback to single tweet
+    // Ensure we have exactly the requested number of tweets
+    if (tweets.length !== parseInt(length)) {
+      console.error('Generated incorrect number of tweets:', tweets.length, 'expected:', length)
+      return NextResponse.json(
+        { error: 'Failed to generate the correct number of tweets' },
+        { status: 500 }
+      )
     }
 
     // Store in history
