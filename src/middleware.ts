@@ -44,7 +44,6 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    // Get the session
     const { data: { session } } = await supabase.auth.getSession()
 
     // Handle auth callback route specially
@@ -57,9 +56,9 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
-    // If user is not signed in and trying to access dashboard
+    // If user is not signed in and trying to access protected routes
     if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     // If user is signed in and on the landing page

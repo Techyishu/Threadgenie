@@ -45,7 +45,6 @@ export function AuthForm() {
       if (error) throw error
 
       router.refresh()
-      router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally {

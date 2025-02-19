@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { PricingModal } from './pricing-modal'
 import { AuthForm } from './auth-form'
+import { useRouter } from 'next/navigation'
 
 export function LandingPage() {
   const [showPricing, setShowPricing] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const router = useRouter()
 
   const scrollToFeatures = () => {
     const featuresSection = document.getElementById('features')
@@ -39,7 +41,7 @@ export function LandingPage() {
                 Pricing
               </button>
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={() => router.push('/dashboard')}
                 className="inline-flex items-center px-4 py-2 rounded-full bg-white text-black hover:bg-gray-100 transition-colors"
               >
                 Get started for free
@@ -64,7 +66,7 @@ export function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={() => router.push('/dashboard')}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-full bg-white text-black hover:bg-gray-100 transition-colors"
               >
                 Get started for free
@@ -167,7 +169,7 @@ export function LandingPage() {
         {/* Call to Action */}
         <div className="text-center mt-16">
           <button
-            onClick={() => setShowAuth(true)}
+            onClick={() => router.push('/dashboard')}
             className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
             Open the app
@@ -237,7 +239,7 @@ export function LandingPage() {
             </div>
 
             <button
-              onClick={() => setShowAuth(true)}
+              onClick={() => router.push('/dashboard')}
               className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black hover:bg-gray-100 transition-colors"
             >
               Get started
@@ -380,7 +382,7 @@ export function LandingPage() {
         {/* Call to Action */}
         <div className="text-center mt-16">
           <button
-            onClick={() => setShowAuth(true)}
+            onClick={() => router.push('/dashboard')}
             className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
             Open the app
