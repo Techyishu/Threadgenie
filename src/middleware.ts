@@ -48,6 +48,7 @@ export async function middleware(request: NextRequest) {
 
     // Handle auth callback route specially
     if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+      // Skip any redirects for callback route
       return response
     }
 
@@ -59,6 +60,11 @@ export async function middleware(request: NextRequest) {
     // If user is signed in and on the landing page
     if (session && request.nextUrl.pathname === '/') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    // Allow access to dashboard without redirection
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      return response
     }
 
     return response

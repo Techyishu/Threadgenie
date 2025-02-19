@@ -31,10 +31,15 @@ export async function GET(request: Request) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) throw error
 
-      // Add a small delay to ensure session is established
+      // Get session to confirm it's established
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Session not established')
+
+      // Add a small delay to ensure session is fully propagated
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      return NextResponse.redirect(new URL(next, origin))
+      // Force redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', origin))
     } catch (error) {
       console.error('Auth callback error:', error)
       return NextResponse.redirect(new URL('/?error=auth_callback_failed', origin))
