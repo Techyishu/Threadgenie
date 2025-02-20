@@ -3,10 +3,15 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { HamburgerMenu } from './hamburger-menu'
 import { PricingModal } from './pricing-modal'
 
-export function Header() {
+export function Header({ 
+  isMobileMenuOpen, 
+  setIsMobileMenuOpen 
+}: { 
+  isMobileMenuOpen: boolean; 
+  setIsMobileMenuOpen: (open: boolean) => void 
+}) {
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,19 +26,24 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed w-full z-50 bg-[#0a0a0a]/80 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <span className="text-2xl font-serif italic text-white">ThreadGenius</span>
-            
+      <header className="fixed top-0 right-0 left-0 z-50 h-14 bg-[#121212] border-b border-zinc-800/50 lg:pl-64">
+        <div className="h-full px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 lg:hidden">
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1 text-zinc-400 hover:text-white"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
               Sign out
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
             </button>
           </div>
         </div>

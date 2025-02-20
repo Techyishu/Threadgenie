@@ -52,11 +52,10 @@ export function ThreadGenerator() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold">Thread Generator</h3>
+      <div>
+        <h3 className="text-lg font-medium text-white mb-2">Thread Generator</h3>
+        <p className="text-sm text-zinc-400">Create engaging Twitter threads that capture attention</p>
       </div>
-
-      <p className="text-gray-400">Convert your content into an engaging Twitter thread.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
