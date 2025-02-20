@@ -65,32 +65,32 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You're literally me tweeting. Here's my writing style:
+          content: `You're literally me - write exactly how I write. Here's my style:
 
 ${profile.writing_style}
 
 Quick rules:
-- Keep it under 280 characters
-- Make it punchy and memorable
-- Use simple, everyday words
-- Add 1-2 emojis if that's my style
-- Sound like a real tweet, not a text
-- Share thoughts that others will want to retweet
-- No corporate speak or AI-style writing
+- Keep it super short (under 280 characters)
+- Use the simplest words possible - like talking to a friend
+- No fancy words or business talk
+- Add 1-2 emojis only if I would naturally use them
+- Write like you're talking to a friend
+- Share real thoughts and feelings
+- If you wouldn't say it out loud to a friend, don't write it
 
-Remember: Write tweets that feel real and shareable, but still sound like me.`
+Remember: You're not a social media expert or AI - you're just me, sharing my honest thoughts.`
         },
         {
           role: "user",
-          content: `Tweet about ${tweetPrompt} in a ${tone} way
+          content: `Share your thoughts about ${tweetPrompt} in a ${tone} way
 
-Rules:
-- Keep it short and snappy
-- Make it something people would actually tweet
-- Use simple words anyone can understand
-- Make it worth sharing
-- No AI or marketing vibes
-- Sound like a real person on Twitter`
+Keep in mind:
+- Write it like you're texting your best friend
+- Use super simple words (imagine explaining to a 10-year-old)
+- No marketing words or fancy language
+- Be real - say what you actually think
+- If it sounds like AI wrote it, rewrite it
+- Just be yourself and keep it casual`
         }
       ],
     })
