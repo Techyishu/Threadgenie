@@ -13,15 +13,21 @@ export function Header({
   setIsMobileMenuOpen: (open: boolean) => void 
 }) {
   const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
   const [isPricingOpen, setIsPricingOpen] = useState(false)
-
+  
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.refresh()
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      
+      await supabase.auth.signOut()
+      // Force a hard navigation to the root path
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
   }
 
   return (
