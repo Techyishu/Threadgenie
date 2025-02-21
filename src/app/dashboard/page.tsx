@@ -3,7 +3,11 @@ import { cookies } from 'next/headers'
 import { DashboardClient } from './dashboard-client'
 import { redirect } from 'next/navigation'
 
-export default async function Dashboard({ searchParams }: { searchParams: { tab?: string } }) {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string }
+}) {
   const cookieStore = cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,5 +38,20 @@ export default async function Dashboard({ searchParams }: { searchParams: { tab?
 
   const needsOnboarding = !profile?.writing_style
 
-  return <DashboardClient searchParams={searchParams} needsOnboarding={needsOnboarding} />
+  // Fetch ideas if on ideas tab
+  let ideas = []
+  if (searchParams.tab === 'ideas') {
+    const { data: ideasData } = await supabase
+      .from('content_ideas')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    ideas = ideasData || []
+  }
+
+  return <DashboardClient 
+    searchParams={searchParams} 
+    needsOnboarding={needsOnboarding} 
+    ideas={ideas}
+  />
 } 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Header } from '@/components/header'
 import { History } from '@/components/history'
 import { WritingStyleWrapper } from '@/components/writing-style-wrapper'
@@ -9,17 +9,30 @@ import { ThreadGenerator } from '@/components/thread-generator'
 import { TweetGenerator } from '@/components/tweet-generator'
 import { BioGenerator } from '@/components/bio-generator'
 import { HomeTab } from '@/components/home-tab'
+import { Ideas } from './components/ideas'
+import dynamic from 'next/dynamic'
+import { Settings } from './components/settings'
+
+interface DashboardClientProps {
+  searchParams: { tab?: string }
+  needsOnboarding: boolean
+  ideas: any[] // Add proper type later
+}
+
+// Memoize the components to prevent unnecessary re-renders
+const MemoizedHistory = dynamic(() => import('@/components/history').then(mod => mod.History), {
+  ssr: false
+})
 
 export function DashboardClient({ 
   searchParams, 
-  needsOnboarding 
-}: { 
-  searchParams: { tab?: string }
-  needsOnboarding: boolean
-}) {
+  needsOnboarding,
+  ideas 
+}: DashboardClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const getActiveComponent = () => {
+  // Memoize the active component to prevent re-renders
+  const ActiveComponent = useMemo(() => {
     switch (searchParams.tab) {
       case 'home':
         return <HomeTab />;
@@ -29,10 +42,15 @@ export function DashboardClient({
         return <TweetGenerator />;
       case 'bio-generator':
         return <BioGenerator />;
+      case 'settings':
+        return <Settings />;
+      // Temporarily hidden
+      // case 'ideas':
+      //   return <Ideas initialIdeas={ideas} />;
       default:
         return <HomeTab />;
     }
-  };
+  }, [searchParams.tab])
 
   return (
     <div className="min-h-screen bg-[#121212]">
@@ -48,7 +66,7 @@ export function DashboardClient({
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <div className="xl:col-span-2">
                   <div className="bg-[#1a1a1a] rounded-lg border border-zinc-800/50 p-6">
-                    {getActiveComponent()}
+                    {ActiveComponent}
                   </div>
                 </div>
 
@@ -62,7 +80,7 @@ export function DashboardClient({
                         <h3 className="text-sm font-medium text-white">History</h3>
                       </div>
                       <div className="overflow-y-auto max-h-[calc(100vh-12rem)]">
-                        <History />
+                        <MemoizedHistory />
                       </div>
                     </div>
                   </div>

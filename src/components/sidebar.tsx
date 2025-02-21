@@ -1,51 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { memo } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-export function Sidebar({ 
+const navigation = [
+  {
+    name: 'Home / X',
+    href: '/dashboard?tab=home',
+    icon: '✨',
+  },
+  { type: 'divider' },
+  {
+    name: 'Thread Generator',
+    href: '/dashboard?tab=thread-generator',
+    icon: '🧵',
+  },
+  {
+    name: 'Tweet Generator',
+    href: '/dashboard?tab=tweet-generator',
+    icon: '📝',
+  },
+  {
+    name: 'Bio Generator',
+    href: '/dashboard?tab=bio-generator',
+    icon: '👤',
+  },
+  { type: 'divider' },
+  {
+    name: 'Settings',
+    href: '/dashboard?tab=settings',
+    icon: '⚙️',
+  }
+]
+
+export const Sidebar = memo(function Sidebar({ 
   isMobileMenuOpen, 
   setIsMobileMenuOpen 
 }: { 
-  isMobileMenuOpen: boolean; 
+  isMobileMenuOpen: boolean
   setIsMobileMenuOpen: (open: boolean) => void 
 }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const navigation = [
-    {
-      name: 'Home / X',
-      href: '/dashboard?tab=home',
-      icon: '✨',
-    },
-    { type: 'divider' },
-    {
-      name: 'Thread Generator',
-      href: '/dashboard?tab=thread-generator',
-      icon: '🧵',
-    },
-    {
-      name: 'Tweet Generator',
-      href: '/dashboard?tab=tweet-generator',
-      icon: '📝',
-    },
-    {
-      name: 'Bio Generator',
-      href: '/dashboard?tab=bio-generator',
-      icon: '👤',
-    },
-  ]
-
   const isActive = (href: string | undefined) => {
-    if (!href) return false;
+    if (!href) return false
     if (href.includes('?tab=')) {
-      const [basePath, queryParams] = href.split('?');
-      return pathname === basePath && queryParams === `tab=${searchParams.get('tab')}`;
+      const [basePath, queryParams] = href.split('?')
+      return pathname === basePath && queryParams === `tab=${searchParams.get('tab')}`
     }
-    return pathname === href;
-  };
+    return pathname === href
+  }
 
   return (
     <>
@@ -57,7 +63,7 @@ export function Sidebar({
           <nav className="flex-1 space-y-0.5 px-2 py-3">
             {navigation.map((item, i) => {
               if (item.type === 'divider') {
-                return <div key={i} className="h-px bg-zinc-800/50 my-3" />;
+                return <div key={i} className="h-px bg-zinc-800/50 my-3" />
               }
               
               return (
@@ -69,6 +75,7 @@ export function Sidebar({
                       ? 'bg-white/10 text-white'
                       : 'text-zinc-400 hover:text-white hover:bg-white/5'
                   }`}
+                  prefetch={true}
                 >
                   <span className="text-lg">{item.icon}</span>
                   {item.name}
@@ -80,7 +87,10 @@ export function Sidebar({
       </div>
 
       {/* Mobile sidebar backdrop */}
-      <div className={`fixed inset-0 bg-black/50 z-40 lg:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`} onClick={() => setIsMobileMenuOpen(false)} />
+      <div 
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`} 
+        onClick={() => setIsMobileMenuOpen(false)} 
+      />
     </>
   )
-} 
+}) 
