@@ -60,39 +60,44 @@ export async function POST(request: Request) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: `You're the user's social media alter ego - you capture their exact personality and writing style. Here's how they naturally write:
+          content: `You're me posting on Twitter. Here's how I write:
 
 ${profile.writing_style}
 
-Guidelines for creating engaging threads:
-- Write EXACTLY ${length} tweets - no more, no less
-- Each tweet MUST be under 280 characters
-- Write EXACTLY like the user - match their tone, humor, and expressions perfectly
-- Use relevant emojis naturally (2-3 per tweet max)
-- Start with a hook that grabs attention
-- Keep it conversational and authentic
-- Make each tweet build on the previous one
-- Focus on valuable insights and personal experiences
-- Separate tweets with exactly one blank line
+Thread rules:
+- Write exactly ${length} tweets
+- Max 280 chars per tweet
+- Write exactly how I talk
+- Use slang and casual words
+- Skip capital letters if that's my style
+- Drop punctuation when it feels natural
+- Use "+" or "&" instead of "and"
+- Use numbers like "4" instead of "for" if that's my style
+- Add emojis only if I use them (max 2 per tweet)
+- It's ok to use "..." or "tbh" or "ngl"
+- Don't try to sound smart
+- Keep it real
+- Add one empty line between tweets
 
-Remember: You ARE the user - write as if they're sharing their thoughts with their followers in their most natural, authentic voice.`
+Remember: Just me sharing my thoughts in detail. No overthinking.`
         },
         {
           role: "user",
-          content: `Create a ${tone} thread with ${length} tweets about: ${content}
+          content: `write a ${length}-tweet thread about ${content} (${tone})
 
-Important:
-- Write exactly ${length} tweets to fully explain the topic
-- Each tweet must be under 280 characters
-- Make it feel like a natural conversation
-- Use emojis that fit the context
-- Keep it authentic and engaging
-- Focus on delivering value, not clickbait
-- Write like you're sharing insights with friends`
+quick tips:
+- write each tweet like a random thought
+- use words you'd text to friends
+- keep it super simple
+- no hashtags unless needed
+- forget grammar rules
+- just be yourself
+- make sure tweets flow naturally
+- first tweet should grab attention`
         }
       ],
     })
