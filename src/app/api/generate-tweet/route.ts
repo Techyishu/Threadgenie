@@ -3,6 +3,7 @@ import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkGenerationLimit } from '@/lib/check-generation-limit'
+import { TONES, type ToneType } from '@/lib/tones'
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
     }
 
     const { tweetPrompt, tone = 'casual' } = await request.json()
+    const selectedTone = TONES[tone as ToneType]
 
     if (!tweetPrompt) {
       return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
@@ -69,32 +71,30 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Tweet rules:
-- Max 280 chars
-- Write exactly how I talk
-- Use slang and casual words
-- Skip capital letters if that's my style
-- Drop punctuation when it feels natural
-- Use "+" or "&" instead of "and"
-- Use numbers like "4" instead of "for" if that's my style
-- Add emojis only if I use them (max 2)
-- It's ok to use "..." or "tbh" or "ngl"
-- Don't try to sound smart
-- Keep it real
+Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Remember: Just me sharing random thoughts. No overthinking.`
+Tweet rules:
+- Max 280 characters
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
+- Write exactly how I talk
+- Use appropriate language for the tone
+- Adapt formality based on tone
+- Add emojis only if appropriate for tone (max 2)
+- Make it attention-grabbing
+- Keep it authentic to the tone
+
+Remember: One perfect tweet in ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `tweet about ${tweetPrompt} (${tone})
+          content: `Write a ${selectedTone.name.toLowerCase()} tweet about: ${tweetPrompt}
 
-quick tips:
-- write it like a random thought
-- use words you'd text to friends
-- keep it super simple
-- no hashtags unless needed
-- forget grammar rules
-- just be yourself`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make it engaging
+- Keep it concise
+- Stay true to the tone`
         }
       ],
     })

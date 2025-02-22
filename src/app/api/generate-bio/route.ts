@@ -3,6 +3,7 @@ import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkGenerationLimit } from '@/lib/check-generation-limit'
+import { TONES, type ToneType } from '@/lib/tones'
 
 export async function POST(request: Request) {
   try {
@@ -53,49 +54,46 @@ export async function POST(request: Request) {
       )
     }
 
-    const { bioKeywords, personalStyle = 'professional' } = await request.json()
+    const { bioKeywords, tone = 'professional' } = await request.json()
+    const selectedTone = TONES[tone as ToneType]
 
     if (!bioKeywords) {
       return NextResponse.json({ error: 'Missing keywords' }, { status: 400 })
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: `You are a friendly helper who's good at writing Twitter bios that show who people really are. Here's how the user naturally writes:
+          content: `You're helping create a Twitter bio. Here's the style:
 
 ${profile.writing_style}
 
-When writing their bio:
-- Write exactly like the user writes
-- Show their real personality
-- Use simple, clear words
-- Keep it honest and real
-- Skip overused phrases
-- Only use emojis if they really fit (max 2-3)
-- Keep it under 160 characters
+Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Skip these overused phrases:
-- "Coffee lover ☕"
-- "Living life to the fullest"
-- "Views are my own"
-- "Passionate about..."
-- Any job title + "by day, [hobby] by night"
+Bio rules:
+- Max 160 characters
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
+- Include relevant keywords
+- Make it memorable
+- Use appropriate language for the tone
+- Add emojis if they fit the tone (max 3)
+- Focus on unique value proposition
+- Keep it authentic to the tone
 
-Remember: The bio should sound just like the user - not like a resume or brand statement.`
+Remember: Create a compelling bio in ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create a ${personalStyle} Twitter bio using these details: ${bioKeywords}
+          content: `Create a ${selectedTone.name.toLowerCase()} Twitter bio using these keywords: ${bioKeywords}
 
-Write it in the user's exact style and voice.
-Make it sound real and personal - like they wrote it themselves.
-Keep the words simple and clear.
-Focus on what makes them unique and interesting.
-Skip business language and buzzwords.
-If you use emojis, make sure they really fit who they are.`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make it stand out
+- Include key expertise
+- Stay true to the tone`
         }
       ],
     })

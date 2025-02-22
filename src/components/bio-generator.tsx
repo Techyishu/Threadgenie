@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
 import { Button } from '@/components/ui/button'
+import { TONES } from '@/lib/tones'
 
 export function BioGenerator() {
   const [bioKeywords, setBioKeywords] = useState('')
-  const [personalStyle, setPersonalStyle] = useState('professional')
+  const [tone, setTone] = useState('professional')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [bio, setBio] = useState<string | null>(null)
@@ -23,7 +24,7 @@ export function BioGenerator() {
       const response = await fetch('/api/generate-bio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bioKeywords, personalStyle }),
+        body: JSON.stringify({ bioKeywords, tone }),
       })
 
       const data = await response.json()
@@ -68,18 +69,19 @@ export function BioGenerator() {
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Personal Style
+            Tone
           </label>
           <div className="relative">
             <select 
-              value={personalStyle}
-              onChange={(e) => setPersonalStyle(e.target.value)}
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
               className="w-full bg-[#0d1117] border border-gray-800 rounded-lg p-3 pr-10 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="professional">Professional</option>
-              <option value="creative">Creative</option>
-              <option value="humorous">Humorous</option>
-              <option value="minimalist">Minimalist</option>
+              {Object.entries(TONES).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value.name}
+                </option>
+              ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

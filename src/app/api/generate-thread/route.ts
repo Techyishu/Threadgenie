@@ -3,6 +3,7 @@ import { CookieOptions, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkGenerationLimit } from '@/lib/check-generation-limit'
+import { TONES, type ToneType } from '@/lib/tones'
 
 export async function POST(request: Request) {
   try {
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
     }
 
     const { content, tone = 'casual', length = '5' } = await request.json()
+    const selectedTone = TONES[tone as ToneType]
 
     if (!content) {
       return NextResponse.json({ error: 'Missing content' }, { status: 400 })
@@ -68,36 +70,36 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
+Tone: ${selectedTone.name} - ${selectedTone.style}
+
 Thread rules:
 - Write exactly ${length} tweets
 - Max 280 chars per tweet
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
 - Write exactly how I talk
-- Use slang and casual words
+- Use appropriate language for the tone
 - Skip capital letters if that's my style
 - Drop punctuation when it feels natural
-- Use "+" or "&" instead of "and"
-- Use numbers like "4" instead of "for" if that's my style
+- Use "+" or "&" instead of "and" if casual
+- Use numbers like "4" instead of "for" if casual
 - Add emojis only if I use them (max 2 per tweet)
-- It's ok to use "..." or "tbh" or "ngl"
-- Don't try to sound smart
-- Keep it real
+- It's ok to use "..." or "tbh" or "ngl" in casual tone
+- Adapt formality based on tone
+- Keep it authentic to the tone
 - Add one empty line between tweets
 
-Remember: Just me sharing my thoughts in detail. No overthinking.`
+Remember: Just me sharing my thoughts in ${selectedTone.name.toLowerCase()} style. No overthinking.`
         },
         {
           role: "user",
-          content: `write a ${length}-tweet thread about ${content} (${tone})
+          content: `write a ${length}-tweet ${selectedTone.name.toLowerCase()} thread about ${content}
 
-quick tips:
-- write each tweet like a random thought
-- use words you'd text to friends
-- keep it super simple
-- no hashtags unless needed
-- forget grammar rules
-- just be yourself
-- make sure tweets flow naturally
-- first tweet should grab attention`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make sure tweets flow naturally
+- First tweet should grab attention
+- Stay consistent with tone throughout`
         }
       ],
     })

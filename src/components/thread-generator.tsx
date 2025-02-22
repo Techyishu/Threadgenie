@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
 import { Button } from '@/components/ui/button'
+import { TONES } from '@/lib/tones'
 
 export function ThreadGenerator() {
   const [content, setContent] = useState('')
@@ -83,10 +84,11 @@ export function ThreadGenerator() {
                 onChange={(e) => setTone(e.target.value)}
                 className="w-full bg-[#0d1117] border border-gray-800 rounded-lg p-3 pr-10 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="casual">Casual</option>
-                <option value="professional">Professional</option>
-                <option value="funny">Funny</option>
-                <option value="serious">Serious</option>
+                {Object.entries(TONES).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {value.name}
+                  </option>
+                ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
