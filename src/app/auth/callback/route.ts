@@ -5,8 +5,6 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
     const cookieStore = cookies()
@@ -29,41 +27,63 @@ export async function GET(request: Request) {
     )
 
     try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (error) throw error
+      // Exchange the code for a session
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+      if (exchangeError) throw exchangeError
 
-      // Get the session to ensure it's properly set
-      const { data: { session } } = await supabase.auth.getSession()
+      // Get the session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
       if (!session) throw new Error('No session established')
 
-      const response = NextResponse.redirect(`${origin}/dashboard`)
+      // Create response with redirect
+      const response = NextResponse.redirect(new URL('/dashboard', origin))
 
-      // Set auth cookies with proper options
+      // Set cookie options
       const cookieOptions: CookieOptions = {
+        name: 'sb-auth-token',
+        value: session.access_token,
+        domain: request.headers.get('host')?.split(':')[0], // Remove port if present
         path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
         httpOnly: true,
-        maxAge: 60 * 60 * 24 * 7 // 1 week
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
       }
 
-      if (session.access_token) {
-        response.cookies.set('sb-access-token', session.access_token, cookieOptions)
-      }
+      // Set the cookies
+      response.cookies.set({
+        name: 'sb-access-token',
+        value: session.access_token,
+        ...cookieOptions
+      })
+
       if (session.refresh_token) {
-        response.cookies.set('sb-refresh-token', session.refresh_token, {
+        response.cookies.set({
+          name: 'sb-refresh-token',
+          value: session.refresh_token,
           ...cookieOptions,
           maxAge: 60 * 60 * 24 * 365 // 1 year
         })
       }
 
+      // Set additional auth cookie
+      response.cookies.set({
+        name: 'supabase-auth-token',
+        value: JSON.stringify([session.access_token, session.refresh_token]),
+        ...cookieOptions
+      })
+
       return response
     } catch (error) {
       console.error('Auth callback error:', error)
-      return NextResponse.redirect(`${origin}/?error=auth_callback_failed`)
+      // Redirect to login page with error
+      return NextResponse.redirect(
+        new URL(`/?error=auth_callback_failed&message=${error}`, origin)
+      )
     }
   }
 
-  // Return to dashboard if no code in URL
-  return NextResponse.redirect(`${origin}/dashboard`)
+  // No code present, redirect to home page
+  return NextResponse.redirect(new URL('/', origin))
 }

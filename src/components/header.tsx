@@ -21,6 +21,8 @@ export function Header({
     
     try {
       setIsSigningOut(true)
+      setIsMobileMenuOpen(false) // Close mobile menu when signing out
+      
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -67,6 +69,35 @@ export function Header({
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          
+          {/* Menu Content */}
+          <div className="fixed inset-y-0 left-0 w-64 bg-[#121212] border-r border-zinc-800/50 p-4">
+            <div className="flex flex-col h-full">
+              <div className="flex-1">
+                {/* Mobile menu items */}
+              </div>
+              <div className="border-t border-zinc-800/50 pt-4">
+                <button
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="w-full text-left px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors disabled:opacity-50"
+                >
+                  {isSigningOut ? 'Signing out...' : 'Sign out'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PricingModal 
         isOpen={isPricingOpen}
