@@ -31,39 +31,15 @@ export async function GET(request: Request) {
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) throw error
-
-      // Get the session to ensure it's properly set
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('No session established')
-
-      const response = NextResponse.redirect(new URL(next, origin))
-
-      // Set auth cookies with proper options
-      const cookieOptions: CookieOptions = {
-        path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true
-      }
-
-      if (session.access_token) {
-        response.cookies.set('access-token', session.access_token, cookieOptions)
-      }
-      if (session.refresh_token) {
-        response.cookies.set('refresh-token', session.refresh_token, {
-          ...cookieOptions,
-          maxAge: 60 * 60 * 24 * 365 // 1 year
-        })
-      }
-
-      return response
-
     } catch (error) {
-      console.error('Auth callback error:', error)
-      return NextResponse.redirect(new URL('/?error=auth_callback_failed', origin))
+      console.error('Error exchanging code for session:', error)
+      return NextResponse.redirect(`${origin}/auth-error`)
     }
+
+    // Redirect to the dashboard after successful authentication
+    return NextResponse.redirect(`${origin}/dashboard`)
   }
 
-  // Return to home page if no code is present
-  return NextResponse.redirect(new URL('/', origin))
+  // Return to dashboard if no code in URL
+  return NextResponse.redirect(`${origin}/dashboard`)
 }
