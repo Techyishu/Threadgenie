@@ -57,9 +57,9 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
-    // If user is signed in and on the landing page
-    if (session && request.nextUrl.pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    // If user is signed in and trying to access landing page
+    if (session && request.nextUrl.pathname === '/landing') {
+      return NextResponse.redirect(new URL('/', request.url))
     }
 
     return response
