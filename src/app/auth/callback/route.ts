@@ -41,38 +41,29 @@ export async function GET(request: Request) {
 
       // Set cookie options
       const cookieOptions: CookieOptions = {
-        name: 'sb-auth-token',
-        value: session.access_token,
-        domain: request.headers.get('host')?.split(':')[0], // Remove port if present
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        domain: request.headers.get('host')?.split(':')[0] // Remove port if present
       }
 
       // Set the cookies
-      response.cookies.set({
-        name: 'sb-access-token',
-        value: session.access_token,
-        ...cookieOptions
-      })
+      response.cookies.set('sb-access-token', session.access_token, cookieOptions)
 
       if (session.refresh_token) {
-        response.cookies.set({
-          name: 'sb-refresh-token',
-          value: session.refresh_token,
+        response.cookies.set('sb-refresh-token', session.refresh_token, {
           ...cookieOptions,
           maxAge: 60 * 60 * 24 * 365 // 1 year
         })
       }
 
       // Set additional auth cookie
-      response.cookies.set({
-        name: 'supabase-auth-token',
-        value: JSON.stringify([session.access_token, session.refresh_token]),
-        ...cookieOptions
-      })
+      response.cookies.set('supabase-auth-token', 
+        JSON.stringify([session.access_token, session.refresh_token]),
+        cookieOptions
+      )
 
       return response
     } catch (error) {
