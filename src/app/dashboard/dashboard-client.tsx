@@ -12,11 +12,13 @@ import { HomeTab } from '@/components/home-tab'
 import { Ideas } from './components/ideas'
 import dynamic from 'next/dynamic'
 import { Settings } from './components/settings'
+import { AuthForm } from '@/components/auth-form'
 
 interface DashboardClientProps {
   searchParams: { tab?: string }
   needsOnboarding: boolean
   ideas: any[] // Add proper type later
+  isAuthenticated: boolean
 }
 
 // Memoize the components to prevent unnecessary re-renders
@@ -27,9 +29,11 @@ const MemoizedHistory = dynamic(() => import('@/components/history').then(mod =>
 export function DashboardClient({ 
   searchParams, 
   needsOnboarding,
-  ideas 
+  ideas,
+  isAuthenticated 
 }: DashboardClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showAuth, setShowAuth] = useState(!isAuthenticated)
 
   // Memoize the active component to prevent re-renders
   const ActiveComponent = useMemo(() => {
@@ -54,6 +58,17 @@ export function DashboardClient({
 
   return (
     <div className="min-h-screen bg-[#121212]">
+      {!isAuthenticated && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#1a1f2d] rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">Get Started</h2>
+            </div>
+            <AuthForm />
+          </div>
+        </div>
+      )}
+
       <Header isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       

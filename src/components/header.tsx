@@ -14,19 +14,31 @@ export function Header({
 }) {
   const router = useRouter()
   const [isPricingOpen, setIsPricingOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   
   const handleSignOut = async () => {
+    if (isSigningOut) return
+    
     try {
+      setIsSigningOut(true)
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       
       await supabase.auth.signOut()
-      // Force a hard navigation to the root path
-      window.location.href = '/'
+      
+      // First navigate to home page
+      router.push('/')
+      
+      // Then do a full page refresh after a short delay
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error('Sign out error:', error)
+    } finally {
+      setIsSigningOut(false)
     }
   }
 
@@ -47,9 +59,10 @@ export function Header({
           <div className="flex items-center gap-4">
             <button
               onClick={handleSignOut}
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
+              disabled={isSigningOut}
+              className="text-sm text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
             >
-              Sign out
+              {isSigningOut ? 'Signing out...' : 'Sign out'}
             </button>
           </div>
         </div>

@@ -44,8 +44,8 @@ export function AuthForm() {
 
       if (error) throw error
 
-      router.refresh()
-      router.push('/dashboard')
+      // Force a hard reload of the page instead of using router.push
+      window.location.href = '/dashboard'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in')
     } finally {

@@ -28,30 +28,36 @@ export default async function DashboardPage({
   )
   
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const isAuthenticated = !!user
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('writing_style')
-    .eq('user_id', user.id)
-    .single()
-
-  const needsOnboarding = !profile?.writing_style
-
-  // Fetch ideas if on ideas tab
+  let profile = null
+  let needsOnboarding = false
   let ideas = []
-  if (searchParams.tab === 'ideas') {
-    const { data: ideasData } = await supabase
-      .from('content_ideas')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50)
-    ideas = ideasData || []
+
+  if (isAuthenticated) {
+    const { data: profileData } = await supabase
+      .from('user_profiles')
+      .select('writing_style')
+      .eq('user_id', user.id)
+      .single()
+
+    profile = profileData
+    needsOnboarding = !profile?.writing_style
+
+    if (searchParams.tab === 'ideas') {
+      const { data: ideasData } = await supabase
+        .from('content_ideas')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      ideas = ideasData || []
+    }
   }
 
   return <DashboardClient 
     searchParams={searchParams} 
     needsOnboarding={needsOnboarding} 
     ideas={ideas}
+    isAuthenticated={isAuthenticated}
   />
 } 
