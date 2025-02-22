@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 
 export function AuthForm() {
   const [email, setEmail] = useState('')
@@ -185,26 +186,28 @@ export function AuthForm() {
           <div className="text-green-500 text-sm">{successMessage}</div>
         )}
 
-        <button
+        <Button
           type="submit"
-          disabled={isLoading}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          fullWidth
+          isLoading={isLoading}
+          variant="gradient-blue"
+          size="lg"
         >
           {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
-        </button>
+        </Button>
 
         <div className="text-center">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setIsSignUp(!isSignUp)
               setError(null)
               setSuccessMessage(null)
             }}
-            className="text-sm text-blue-500 hover:text-blue-400"
           >
             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

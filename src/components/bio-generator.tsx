@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
+import { Button } from '@/components/ui/button'
 
 export function BioGenerator() {
   const [bioKeywords, setBioKeywords] = useState('')
@@ -88,13 +89,15 @@ export function BioGenerator() {
           </div>
         </div>
 
-        <button 
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
+          isLoading={loading}
+          variant="gradient-green"
+          size="lg"
+          fullWidth
         >
-          {loading ? 'Generating...' : 'Generate Bio'}
-        </button>
+          Generate Bio
+        </Button>
       </form>
 
       {error && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
+import { Button } from '@/components/ui/button'
 
 export function TweetGenerator() {
   const [tweetPrompt, setTweetPrompt] = useState('')
@@ -86,13 +87,15 @@ export function TweetGenerator() {
           </div>
         </div>
 
-        <button 
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
+          isLoading={loading}
+          variant="gradient-blue"
+          size="lg"
+          fullWidth
         >
-          {loading ? 'Generating...' : 'Generate Tweet'}
-        </button>
+          Generate Tweet
+        </Button>
       </form>
 
       {error && (

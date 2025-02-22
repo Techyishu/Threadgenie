@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import { Header } from '@/components/header'
-import { History } from '@/components/history'
 import { WritingStyleWrapper } from '@/components/writing-style-wrapper'
 import { Sidebar } from '@/components/sidebar'
 import { ThreadGenerator } from '@/components/thread-generator'
@@ -10,9 +9,9 @@ import { TweetGenerator } from '@/components/tweet-generator'
 import { BioGenerator } from '@/components/bio-generator'
 import { HomeTab } from '@/components/home-tab'
 import { Ideas } from './components/ideas'
-import dynamic from 'next/dynamic'
 import { Settings } from './components/settings'
 import { AuthForm } from '@/components/auth-form'
+import { HistoryTab } from './components/history-tab'
 
 interface DashboardClientProps {
   searchParams: { tab?: string }
@@ -20,11 +19,6 @@ interface DashboardClientProps {
   ideas: any[] // Add proper type later
   isAuthenticated: boolean
 }
-
-// Memoize the components to prevent unnecessary re-renders
-const MemoizedHistory = dynamic(() => import('@/components/history').then(mod => mod.History), {
-  ssr: false
-})
 
 export function DashboardClient({ 
   searchParams, 
@@ -48,9 +42,8 @@ export function DashboardClient({
         return <BioGenerator />;
       case 'settings':
         return <Settings />;
-      // Temporarily hidden
-      // case 'ideas':
-      //   return <Ideas initialIdeas={ideas} />;
+      case 'history':
+        return <HistoryTab />;
       default:
         return <HomeTab />;
     }
@@ -78,26 +71,10 @@ export function DashboardClient({
             <WritingStyleWrapper />
           ) : (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className={searchParams.tab === 'history' ? '' : 'xl:grid-cols-1'}>
                 <div className="xl:col-span-2">
                   <div className="bg-[#1a1a1a] rounded-lg border border-zinc-800/50 p-6">
                     {ActiveComponent}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="sticky top-24">
-                    <div className="bg-[#1a1a1a] rounded-lg border border-zinc-800/50 p-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 className="text-sm font-medium text-white">History</h3>
-                      </div>
-                      <div className="overflow-y-auto max-h-[calc(100vh-12rem)]">
-                        <MemoizedHistory />
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

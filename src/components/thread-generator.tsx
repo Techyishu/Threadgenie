@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
+import { Button } from '@/components/ui/button'
 
 export function ThreadGenerator() {
   const [content, setContent] = useState('')
@@ -118,13 +119,15 @@ export function ThreadGenerator() {
           </div>
         </div>
 
-        <button 
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
+          isLoading={loading}
+          variant="gradient-purple"
+          size="lg"
+          fullWidth
         >
-          {loading ? 'Generating...' : 'Generate Thread'}
-        </button>
+          Generate Thread
+        </Button>
       </form>
 
       {error && (

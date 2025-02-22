@@ -7,29 +7,34 @@ import { usePathname, useSearchParams } from 'next/navigation'
 const navigation = [
   {
     name: 'Home / X',
-    href: '/dashboard?tab=home',
+    href: '/?tab=home',
     icon: '✨',
   },
   { type: 'divider' },
   {
     name: 'Thread Generator',
-    href: '/dashboard?tab=thread-generator',
+    href: '/?tab=thread-generator',
     icon: '🧵',
   },
   {
     name: 'Tweet Generator',
-    href: '/dashboard?tab=tweet-generator',
+    href: '/?tab=tweet-generator',
     icon: '📝',
   },
   {
     name: 'Bio Generator',
-    href: '/dashboard?tab=bio-generator',
+    href: '/?tab=bio-generator',
     icon: '👤',
   },
   { type: 'divider' },
   {
+    name: 'History',
+    href: '/?tab=history',
+    icon: '📜',
+  },
+  {
     name: 'Settings',
-    href: '/dashboard?tab=settings',
+    href: '/?tab=settings',
     icon: '⚙️',
   }
 ]
