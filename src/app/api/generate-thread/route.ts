@@ -66,8 +66,16 @@ export async function POST(request: Request) {
       )
     }
 
-    const { content, tone = 'casual', length = '5' } = await request.json()
+    const { content, tone = 'viral', length = '5' } = await request.json()
+    
+    // Add validation for tone
+    if (!TONES[tone as ToneType]) {
+      console.log('Invalid tone received:', tone) // Debug log
+      return NextResponse.json({ error: 'Invalid tone selected' }, { status: 400 })
+    }
+    
     const selectedTone = TONES[tone as ToneType]
+    console.log('Selected tone:', selectedTone) // Debug log
 
     if (!content) {
       return NextResponse.json({ error: 'Missing content' }, { status: 400 })
