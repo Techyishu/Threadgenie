@@ -41,8 +41,6 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .single()
 
-    console.log('Thread generator profile:', profile) // Debug log
-
     if (!profile?.writing_style) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
@@ -53,8 +51,6 @@ export async function POST(request: Request) {
       description: "General content and thoughts",
       topics: ["general", "thoughts", "insights"]
     }
-
-    console.log('Selected niche:', selectedNiche) // Debug log
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -70,12 +66,10 @@ export async function POST(request: Request) {
     
     // Add validation for tone
     if (!TONES[tone as ToneType]) {
-      console.log('Invalid tone received:', tone) // Debug log
       return NextResponse.json({ error: 'Invalid tone selected' }, { status: 400 })
     }
     
     const selectedTone = TONES[tone as ToneType]
-    console.log('Selected tone:', selectedTone) // Debug log
 
     if (!content) {
       return NextResponse.json({ error: 'Missing content' }, { status: 400 })

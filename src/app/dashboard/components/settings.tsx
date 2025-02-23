@@ -34,12 +34,9 @@ export function Settings() {
           .eq('user_id', user.id)
           .single()
         
-        console.log('Fetched profile data:', data)
-        
         if (data) {
           setWritingStyle(data.writing_style || '')
           if (data.niche) {
-            console.log('Setting niche to:', data.niche)
             setSelectedNiche(data.niche as NicheType)
           }
         }

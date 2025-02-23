@@ -21,9 +21,6 @@ export function ThreadGenerator() {
     setLoading(true)
     setError(null)
 
-    console.log('Current tone state:', tone)
-    console.log('Request payload:', { content, tone, length })
-
     try {
       const response = await fetch('/api/generate-thread', {
         method: 'POST',
@@ -32,7 +29,6 @@ export function ThreadGenerator() {
       })
 
       const data = await response.json()
-      console.log('API response:', data)
       
       if (response.ok) {
         if (Array.isArray(data.thread)) {
