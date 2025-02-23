@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { createBrowserClient } from '@supabase/ssr'
+import { NICHES, type NicheType } from '@/lib/niches'
 
 interface Profile {
   writing_style: string
@@ -10,6 +11,7 @@ interface Profile {
 
 export function Settings() {
   const [writingStyle, setWritingStyle] = useState('')
+  const [selectedNiche, setSelectedNiche] = useState<NicheType>('tech')
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -39,8 +41,7 @@ export function Settings() {
     fetchProfile()
   }, [])
 
-  const saveWritingStyle = async () => {
-    setSaveMessage(null)
+  const saveProfile = async () => {
     try {
       setIsSaving(true)
       const supabase = createSupabaseClient()
@@ -52,23 +53,24 @@ export function Settings() {
 
       const { error } = await supabase
         .from('user_profiles')
-        .update({ writing_style: writingStyle })
+        .update({
+          writing_style: writingStyle,
+          niche: selectedNiche
+        })
         .eq('user_id', user.id)
 
       if (error) throw error
-
-      setSaveMessage({ type: 'success', text: 'Writing style updated successfully!' })
+      
+      setSaveMessage({ type: 'success', text: 'Settings saved successfully!' })
     } catch (error) {
-      console.error('Failed to save writing style:', error)
+      console.error('Failed to save settings:', error)
       setSaveMessage({ 
         type: 'error', 
-        text: error instanceof Error ? error.message : 'Failed to save writing style' 
+        text: error instanceof Error ? error.message : 'Failed to save settings' 
       })
     } finally {
       setIsSaving(false)
-      setTimeout(() => {
-        setSaveMessage(null)
-      }, 3000)
+      setTimeout(() => setSaveMessage(null), 3000)
     }
   }
 
@@ -93,9 +95,41 @@ export function Settings() {
             </p>
           </div>
 
+          <div>
+            <label className="block text-lg font-medium text-white mb-4">
+              Your Content Niche
+            </label>
+            <div className="grid md:grid-cols-2 gap-4">
+              {Object.entries(NICHES).map(([key, niche]) => (
+                <div
+                  key={key}
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                    selectedNiche === key
+                      ? 'border-blue-500 bg-blue-500/10'
+                      : 'border-gray-800 hover:border-gray-700'
+                  }`}
+                  onClick={() => setSelectedNiche(key as NicheType)}
+                >
+                  <h3 className="text-white font-medium mb-2">{niche.name}</h3>
+                  <p className="text-gray-400 text-sm">{niche.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {niche.topics.map(topic => (
+                      <span
+                        key={topic}
+                        className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-4">
             <Button
-              onClick={saveWritingStyle}
+              onClick={saveProfile}
               disabled={isSaving}
               variant="secondary"
             >

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkGenerationLimit } from '@/lib/check-generation-limit'
 import { TONES, type ToneType } from '@/lib/tones'
+import { NICHES, type NicheType } from '@/lib/niches'
 
 export async function POST(request: Request) {
   try {
@@ -33,16 +34,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's writing style
+    // Get user's writing style and niche
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('writing_style')
+      .select('writing_style, niche')
       .eq('user_id', user.id)
       .single()
 
     if (!profile?.writing_style) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
+
+    const selectedNiche = NICHES[profile.niche as NicheType]
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -70,36 +73,45 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Tone: ${selectedTone.name} - ${selectedTone.style}
+Niche: ${selectedNiche.name}
+Expertise: ${selectedNiche.description}
+Key Topics: ${selectedNiche.topics.join(', ')}
 
-Thread rules:
+Content Style: ${selectedTone.name}
+${selectedTone.description}
+${selectedTone.style}
+
+Content Patterns to Use:
+${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
+
+Content Types to Focus On:
+${selectedTone.contentTypes.map(type => `- ${type}`).join('\n')}
+
+Thread Structure:
+1. Hook: Use ${selectedTone.patterns[0]} to grab attention
+2. Flow: Natural progression using ${selectedTone.patterns[1]} for engagement
+3. Format: Apply ${selectedTone.patterns[2]} throughout
+4. Close: Strong call-to-action or engagement prompt
+
+Rules:
 - Write exactly ${length} tweets
 - Max 280 chars per tweet
-- Match the ${selectedTone.name.toLowerCase()} tone perfectly
-- Write exactly how I talk
-- Use appropriate language for the tone
-- Skip capital letters if that's my style
-- Drop punctuation when it feels natural
-- Use "+" or "&" instead of "and" if casual
-- Use numbers like "4" instead of "for" if casual
-- Add emojis only if I use them (max 2 per tweet)
-- It's ok to use "..." or "tbh" or "ngl" in casual tone
-- Adapt formality based on tone
-- Keep it authentic to the tone
+- Stay within my niche expertise
+- Use relevant terminology
+- Keep content aligned with my topic focus
 - Add one empty line between tweets
 
-Remember: Just me sharing my thoughts in ${selectedTone.name.toLowerCase()} style. No overthinking.`
+Remember: Create viral-worthy content in my voice, focusing on ${selectedNiche.name.toLowerCase()} expertise with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `write a ${length}-tweet ${selectedTone.name.toLowerCase()} thread about ${content}
+          content: `Create a ${length}-tweet thread about ${content} using the ${selectedTone.name.toLowerCase()} style.
 
-Style guide:
-- Match ${selectedTone.name.toLowerCase()} tone perfectly
-- ${selectedTone.style}
-- Make sure tweets flow naturally
-- First tweet should grab attention
-- Stay consistent with tone throughout`
+Make sure to:
+1. Start with a powerful hook
+2. Maintain engagement throughout
+3. End with a strong call-to-action
+4. Stay authentic to my voice and expertise`
         }
       ],
     })

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkGenerationLimit } from '@/lib/check-generation-limit'
 import { TONES, type ToneType } from '@/lib/tones'
+import { NICHES, type NicheType } from '@/lib/niches'
 
 export async function POST(request: Request) {
   try {
@@ -33,16 +34,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's writing style
+    // Get user's writing style and niche
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('writing_style')
+      .select('writing_style, niche')
       .eq('user_id', user.id)
       .single()
 
     if (!profile?.writing_style) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
+
+    const selectedNiche = NICHES[profile.niche as NicheType]
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -70,30 +73,42 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Tone: ${selectedTone.name} - ${selectedTone.style}
+Niche: ${selectedNiche.name}
+Expertise: ${selectedNiche.description}
+Key Topics: ${selectedNiche.topics.join(', ')}
 
-Bio rules:
+Content Style: ${selectedTone.name}
+${selectedTone.description}
+${selectedTone.style}
+
+Content Patterns to Use:
+${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
+
+Bio Structure:
+1. Hook: Use ${selectedTone.patterns[0]} to stand out
+2. Value: Highlight expertise using ${selectedTone.patterns[1]}
+3. Format: Apply ${selectedTone.patterns[2]} for impact
+
+Rules:
 - Max 160 characters
-- Match the ${selectedTone.name.toLowerCase()} tone perfectly
 - Include relevant keywords
+- Highlight niche expertise
+- Use industry-specific terms
 - Make it memorable
-- Use appropriate language for the tone
-- Add emojis if they fit the tone (max 3)
+- Add emojis if they fit (max 3)
 - Focus on unique value proposition
-- Keep it authentic to the tone
 
-Remember: Create a compelling bio in ${selectedTone.name.toLowerCase()} style.`
+Remember: Create a compelling bio that positions me as a ${selectedNiche.name.toLowerCase()} expert with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create a ${selectedTone.name.toLowerCase()} Twitter bio using these keywords: ${bioKeywords}
+          content: `Create a standout bio using these keywords: ${bioKeywords}
 
-Style guide:
-- Match ${selectedTone.name.toLowerCase()} tone perfectly
-- ${selectedTone.style}
-- Make it stand out
-- Include key expertise
-- Stay true to the tone`
+Make sure to:
+1. Lead with impact
+2. Show clear expertise
+3. Include credibility markers
+4. Make it memorable`
         }
       ],
     })
