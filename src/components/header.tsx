@@ -16,6 +16,22 @@ export function Header({
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   
+  const clearAuthCookies = () => {
+    const cookiesToClear = [
+      'sb-access-token',
+      'sb-refresh-token',
+      'supabase-auth-token'
+    ]
+    
+    cookiesToClear.forEach(name => {
+      // Clear with all possible domains and paths
+      document.cookie = `${name}=; max-age=0; path=/; domain=${window.location.hostname}`
+      document.cookie = `${name}=; max-age=0; path=/`
+      // Also try clearing without specific attributes
+      document.cookie = `${name}=; max-age=0`
+    })
+  }
+
   const handleSignOut = async () => {
     if (isSigningOut) return
     
@@ -28,22 +44,28 @@ export function Header({
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       
+      // Sign out from Supabase
       await supabase.auth.signOut()
       
       // Clear all auth cookies
-      const cookiesToClear = [
-        'sb-access-token',
-        'sb-refresh-token',
-        'supabase-auth-token'
-      ]
-      cookiesToClear.forEach(name => {
-        document.cookie = `${name}=; max-age=0; path=/; secure; samesite=lax`
-      })
+      clearAuthCookies()
 
-      // Force a full page reload to clear all state
+      // Clear local storage
+      localStorage.clear()
+      sessionStorage.clear()
+
+      // Small delay to ensure cookies are cleared
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Force a complete reload and redirect
       window.location.href = '/'
     } catch (error) {
       console.error('Sign out error:', error)
+      // Even if there's an error, try to clear everything
+      clearAuthCookies()
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/'
     } finally {
       setIsSigningOut(false)
     }

@@ -31,18 +31,36 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
-          // Properly remove cookies by setting maxAge to 0
-          response.cookies.set({
+          response.cookies.delete({
             name,
-            value: '',
             ...options,
-            maxAge: 0,
-            path: '/'
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true
           })
         },
       },
     }
   )
+
+  const clearAuthCookies = (resp: NextResponse) => {
+    const cookiesToClear = [
+      'sb-access-token',
+      'sb-refresh-token',
+      'supabase-auth-token'
+    ]
+    
+    cookiesToClear.forEach(name => {
+      resp.cookies.delete({
+        name,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+      })
+    })
+  }
 
   try {
     // Get the session
@@ -50,22 +68,7 @@ export async function middleware(request: NextRequest) {
 
     // Clear all auth cookies if there's an error or no session
     if (error || !session) {
-      const cookiesToClear = [
-        'sb-access-token',
-        'sb-refresh-token',
-        'supabase-auth-token'
-      ]
-      cookiesToClear.forEach(name => {
-        response.cookies.set({
-          name,
-          value: '',
-          maxAge: 0,
-          path: '/',
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          httpOnly: true
-        })
-      })
+      clearAuthCookies(response)
     }
 
     // Handle auth callback route specially
@@ -86,24 +89,8 @@ export async function middleware(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Middleware auth error:', error)
-    // Clear all auth cookies on error
     const errorResponse = NextResponse.redirect(new URL('/', request.url))
-    const cookiesToClear = [
-      'sb-access-token',
-      'sb-refresh-token',
-      'supabase-auth-token'
-    ]
-    cookiesToClear.forEach(name => {
-      errorResponse.cookies.set({
-        name,
-        value: '',
-        maxAge: 0,
-        path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true
-      })
-    })
+    clearAuthCookies(errorResponse)
     return errorResponse
   }
 }
