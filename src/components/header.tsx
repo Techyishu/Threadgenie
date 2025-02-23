@@ -21,7 +21,7 @@ export function Header({
     
     try {
       setIsSigningOut(true)
-      setIsMobileMenuOpen(false) // Close mobile menu when signing out
+      setIsMobileMenuOpen(false)
       
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,13 +30,18 @@ export function Header({
       
       await supabase.auth.signOut()
       
-      // First navigate to home page
-      router.push('/')
-      
-      // Then do a full page refresh after a short delay
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      // Clear all auth cookies
+      const cookiesToClear = [
+        'sb-access-token',
+        'sb-refresh-token',
+        'supabase-auth-token'
+      ]
+      cookiesToClear.forEach(name => {
+        document.cookie = `${name}=; max-age=0; path=/; secure; samesite=lax`
+      })
+
+      // Force a full page reload to clear all state
+      window.location.href = '/'
     } catch (error) {
       console.error('Sign out error:', error)
     } finally {

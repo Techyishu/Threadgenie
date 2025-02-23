@@ -31,6 +31,7 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
+          // Properly remove cookies by setting maxAge to 0
           response.cookies.set({
             name,
             value: '',
@@ -45,7 +46,27 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Get the session
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session }, error } = await supabase.auth.getSession()
+
+    // Clear all auth cookies if there's an error or no session
+    if (error || !session) {
+      const cookiesToClear = [
+        'sb-access-token',
+        'sb-refresh-token',
+        'supabase-auth-token'
+      ]
+      cookiesToClear.forEach(name => {
+        response.cookies.set({
+          name,
+          value: '',
+          maxAge: 0,
+          path: '/',
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          httpOnly: true
+        })
+      })
+    }
 
     // Handle auth callback route specially
     if (request.nextUrl.pathname.startsWith('/auth/callback')) {
@@ -67,9 +88,21 @@ export async function middleware(request: NextRequest) {
     console.error('Middleware auth error:', error)
     // Clear all auth cookies on error
     const errorResponse = NextResponse.redirect(new URL('/', request.url))
-    const cookiesToClear = ['access-token', 'refresh-token', 'auth-token']
+    const cookiesToClear = [
+      'sb-access-token',
+      'sb-refresh-token',
+      'supabase-auth-token'
+    ]
     cookiesToClear.forEach(name => {
-      errorResponse.cookies.set(name, '', { maxAge: 0, path: '/' })
+      errorResponse.cookies.set({
+        name,
+        value: '',
+        maxAge: 0,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+      })
     })
     return errorResponse
   }
