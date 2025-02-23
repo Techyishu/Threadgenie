@@ -110,8 +110,12 @@ Rules:
 - Use relevant terminology
 - Keep content focused and valuable
 - Make it highly shareable
+- Write naturally, avoid generic hashtags
+- Don't add celebratory phrases or generic endings
+- No "let's" statements or forced excitement
+- Skip promotional-sounding closings
 
-Remember: Create a viral-worthy tweet in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
+Remember: Write as a real person sharing valuable insights${profile.niche ? ` about ${selectedNiche.name.toLowerCase()}` : ''} with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
@@ -120,8 +124,8 @@ Remember: Create a viral-worthy tweet in my voice${profile.niche ? `, focusing o
 Make sure to:
 1. Use a powerful hook
 2. Deliver clear value
-3. Include engagement trigger
-4. Stay authentic to my voice`
+3. Sound natural and authentic
+4. Avoid generic endings or forced hashtags`
         }
       ],
     })
