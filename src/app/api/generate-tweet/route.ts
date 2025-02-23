@@ -46,6 +46,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
+    const { tweetPrompt, tone = 'viral' } = await request.json()
+    
+    // Add validation for tone
+    if (!TONES[tone as ToneType]) {
+      return NextResponse.json({ error: 'Invalid tone selected' }, { status: 400 })
+    }
+    
+    const selectedTone = TONES[tone as ToneType]
+
+    if (!tweetPrompt) {
+      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
+    }
+
     // Set default niche if none selected
     const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
       name: "General",
@@ -61,13 +74,6 @@ export async function POST(request: Request) {
         { error: 'Daily generation limit reached. Upgrade to Pro for unlimited generations.' },
         { status: 403 }
       )
-    }
-
-    const { tweetPrompt, tone = 'casual' } = await request.json()
-    const selectedTone = TONES[tone as ToneType]
-
-    if (!tweetPrompt) {
-      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
     }
 
     const completion = await openai.chat.completions.create({

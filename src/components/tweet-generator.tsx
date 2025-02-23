@@ -4,11 +4,11 @@ import { useState } from 'react'
 import { CopyButton } from './copy-button'
 import { PricingModal } from './pricing-modal'
 import { Button } from '@/components/ui/button'
-import { TONES } from '@/lib/tones'
+import { TONES, type ToneType } from '@/lib/tones'
 
 export function TweetGenerator() {
   const [tweetPrompt, setTweetPrompt] = useState('')
-  const [tone, setTone] = useState('casual')
+  const [tone, setTone] = useState<ToneType>('viral')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tweet, setTweet] = useState<string | null>(null)
@@ -73,7 +73,7 @@ export function TweetGenerator() {
           <div className="relative">
             <select 
               value={tone}
-              onChange={(e) => setTone(e.target.value)}
+              onChange={(e) => setTone(e.target.value as ToneType)}
               className="w-full bg-[#0d1117] border border-gray-800 rounded-lg p-3 pr-10 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {Object.entries(TONES).map(([key, value]) => (
