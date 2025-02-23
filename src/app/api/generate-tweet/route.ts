@@ -46,7 +46,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    const selectedNiche = NICHES[profile.niche as NicheType]
+    // Set default niche if none selected
+    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
+      name: "General",
+      description: "General content and thoughts",
+      topics: ["general", "thoughts", "insights"]
+    }
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -74,9 +79,9 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Niche: ${selectedNiche.name}
+${profile.niche ? `Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}
+Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
 
 Content Style: ${selectedTone.name}
 ${selectedTone.description}
@@ -95,12 +100,12 @@ Tweet Structure:
 
 Rules:
 - Max 280 characters
-- Stay within my niche expertise
+- Stay within my expertise${profile.niche ? ' and niche' : ''}
 - Use relevant terminology
-- Keep content aligned with my topic focus
+- Keep content focused and valuable
 - Make it highly shareable
 
-Remember: Create a viral-worthy tweet in my voice, focusing on ${selectedNiche.name.toLowerCase()} expertise with ${selectedTone.name.toLowerCase()} style.`
+Remember: Create a viral-worthy tweet in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",

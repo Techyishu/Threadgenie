@@ -41,11 +41,20 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .single()
 
+    console.log('Thread generator profile:', profile) // Debug log
+
     if (!profile?.writing_style) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    const selectedNiche = NICHES[profile.niche as NicheType]
+    // Set default niche if none selected
+    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
+      name: "General",
+      description: "General content and thoughts",
+      topics: ["general", "thoughts", "insights"]
+    }
+
+    console.log('Selected niche:', selectedNiche) // Debug log
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -73,9 +82,9 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Niche: ${selectedNiche.name}
+${profile.niche ? `Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}
+Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
 
 Content Style: ${selectedTone.name}
 ${selectedTone.description}
@@ -96,12 +105,12 @@ Thread Structure:
 Rules:
 - Write exactly ${length} tweets
 - Max 280 chars per tweet
-- Stay within my niche expertise
+- Stay within my expertise${profile.niche ? ' and niche' : ''}
 - Use relevant terminology
-- Keep content aligned with my topic focus
+- Keep content focused and valuable
 - Add one empty line between tweets
 
-Remember: Create viral-worthy content in my voice, focusing on ${selectedNiche.name.toLowerCase()} expertise with ${selectedTone.name.toLowerCase()} style.`
+Remember: Create viral-worthy content in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",

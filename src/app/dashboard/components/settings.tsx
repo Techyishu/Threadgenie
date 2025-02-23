@@ -7,6 +7,7 @@ import { NICHES, type NicheType } from '@/lib/niches'
 
 interface Profile {
   writing_style: string
+  niche: string
 }
 
 export function Settings() {
@@ -29,12 +30,18 @@ export function Settings() {
       if (user) {
         const { data } = await supabase
           .from('user_profiles')
-          .select('writing_style')
+          .select('writing_style, niche')
           .eq('user_id', user.id)
           .single()
         
+        console.log('Fetched profile data:', data)
+        
         if (data) {
           setWritingStyle(data.writing_style || '')
+          if (data.niche) {
+            console.log('Setting niche to:', data.niche)
+            setSelectedNiche(data.niche as NicheType)
+          }
         }
       }
     }

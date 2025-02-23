@@ -45,7 +45,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    const selectedNiche = NICHES[profile.niche as NicheType]
+    // Set default niche if none selected
+    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
+      name: "General",
+      description: "General content and thoughts",
+      topics: ["general", "thoughts", "insights"]
+    }
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -73,9 +78,9 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-Niche: ${selectedNiche.name}
+${profile.niche ? `Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}
+Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
 
 Content Style: ${selectedTone.name}
 ${selectedTone.description}
@@ -92,13 +97,13 @@ Bio Structure:
 Rules:
 - Max 160 characters
 - Include relevant keywords
-- Highlight niche expertise
-- Use industry-specific terms
+- Highlight expertise${profile.niche ? ' in niche' : ''}
+- Use appropriate terminology
 - Make it memorable
 - Add emojis if they fit (max 3)
 - Focus on unique value proposition
 
-Remember: Create a compelling bio that positions me as a ${selectedNiche.name.toLowerCase()} expert with ${selectedTone.name.toLowerCase()} style.`
+Remember: Create a compelling bio that positions me${profile.niche ? ` as a ${selectedNiche.name.toLowerCase()} expert` : ''} with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
