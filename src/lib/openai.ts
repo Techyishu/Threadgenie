@@ -42,7 +42,7 @@ export async function generateThread(prompt: string, tone: ToneType) {
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Request timeout')), 30000)
       )
-    ]);
+    ]) as OpenAI.Chat.ChatCompletion;
 
     // Clean and validate the response
     const thread = response.choices[0].message.content;
@@ -54,14 +54,14 @@ export async function generateThread(prompt: string, tone: ToneType) {
       .replace(/[^\x20-\x7E\n]/g, '') // Remove non-printable characters
       .replace(/\n{3,}/g, '\n\n')      // Normalize line breaks
       .split('\n')
-      .filter(tweet => tweet.trim())    // Remove empty lines
-      .map(tweet => tweet.trim());
+      .filter((tweet: string) => tweet.trim())    // Remove empty lines
+      .map((tweet: string) => tweet.trim());
 
     return cleanThread;
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Thread generation error:", error);
-    if (error.message === 'Request timeout') {
+    if (error instanceof Error && error.message === 'Request timeout') {
       throw new Error("The request took too long. Please try again.");
     }
     throw new Error("Failed to generate thread. Please try again.");
