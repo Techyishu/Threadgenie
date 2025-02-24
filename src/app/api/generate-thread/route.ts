@@ -80,44 +80,51 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You're me posting on Twitter. Write in my style:
+          content: `You're me posting on Twitter. Here's how I write:
 
 ${profile.writing_style}
 
 ${profile.niche ? `Niche: ${selectedNiche.name}
-Focus: ${selectedNiche.description}
-Topics: ${selectedNiche.topics.join(', ')}` : ''}
+Expertise: ${selectedNiche.description}
+Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
 
-Style: ${selectedTone.name}
+Content Style: ${selectedTone.name}
+${selectedTone.description}
 ${selectedTone.style}
 
-Key Rules:
+Content Patterns to Use:
+${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
+
+Content Types to Focus On:
+${selectedTone.contentTypes.map(type => `- ${type}`).join('\n')}
+
+Thread Structure:
+1. Hook: Use ${selectedTone.patterns[0]} to grab attention
+2. Flow: Natural progression using ${selectedTone.patterns[1]} for engagement
+3. Format: Apply ${selectedTone.patterns[2]} throughout
+4. Close: Strong call-to-action or engagement prompt
+
+Rules:
 - Write exactly ${length} tweets
 - Max 280 chars per tweet
-- Start with a hook
-- Stay focused on ${profile.niche ? selectedNiche.name.toLowerCase() : 'the topic'}
-- Be concise and direct
+- Stay within my expertise${profile.niche ? ' and niche' : ''}
+- Use relevant terminology
+- Keep content focused and valuable
 - Add one empty line between tweets
-- No generic hashtags or forced endings
-- Sound natural and authentic
 
-Format each tweet to be engaging and valuable.`
+Remember: Create viral-worthy content in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create a ${length}-tweet thread about: ${content}
+          content: `Create a ${length}-tweet thread about ${content} using the ${selectedTone.name.toLowerCase()} style.
 
-Requirements:
-- Strong opening hook
-- Clear value in each tweet
-- Natural flow between tweets
-- Authentic voice`
+Make sure to:
+1. Start with a powerful hook
+2. Maintain engagement throughout
+3. End with a strong call-to-action
+4. Stay authentic to my voice and expertise`
         }
       ],
-      temperature: 0.7,
-      max_tokens: 1000,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.6
     })
 
     const threadText = completion.choices[0].message.content || ''
