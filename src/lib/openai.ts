@@ -7,35 +7,42 @@ if (!process.env.OPENAI_API_KEY) {
 
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  timeout: 60000, // 60 second timeout
+  maxRetries: 3,  // Retry failed requests up to 3 times
 })
 
 export async function generateThread(prompt: string, tone: ToneType) {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional content writer who writes in the style of ${TONES[tone].name}.
-            Style guide: ${TONES[tone].style}
-            
-            Format the thread as follows:
-            1. Start each tweet with a number followed by a period (1., 2., etc)
-            2. Keep each tweet under 280 characters
-            3. Use line breaks between tweets
-            4. Do not use special characters that could cause parsing issues
-            5. Focus on ${TONES[tone].description}
-            
-            Respond only with the formatted thread content.`
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
-      max_tokens: 1000,
-    });
+    const response = await Promise.race([
+      openai.chat.completions.create({
+        model: "gpt-3.5-turbo", // Fallback to 3.5 for faster response
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional content writer who writes in the style of ${TONES[tone].name}.
+              Style guide: ${TONES[tone].style}
+              
+              Format the thread as follows:
+              1. Start each tweet with a number followed by a period (1., 2., etc)
+              2. Keep each tweet under 280 characters
+              3. Use line breaks between tweets
+              4. Do not use special characters that could cause parsing issues
+              5. Focus on ${TONES[tone].description}
+              
+              Respond only with the formatted thread content.`
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      )
+    ]);
 
     // Clean and validate the response
     const thread = response.choices[0].message.content;
@@ -54,6 +61,9 @@ export async function generateThread(prompt: string, tone: ToneType) {
 
   } catch (error) {
     console.error("Thread generation error:", error);
+    if (error.message === 'Request timeout') {
+      throw new Error("The request took too long. Please try again.");
+    }
     throw new Error("Failed to generate thread. Please try again.");
   }
 } 
