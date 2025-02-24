@@ -45,12 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    // Set default niche if none selected
-    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
-      name: "General",
-      description: "General content and thoughts",
-      topics: ["general", "thoughts", "insights"]
-    }
+    const selectedNiche = NICHES[profile.niche as NicheType]
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -78,42 +73,35 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-${profile.niche ? `Niche: ${selectedNiche.name}
+Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
+Key Topics: ${selectedNiche.topics.join(', ')}
 
-Content Style: ${selectedTone.name}
-${selectedTone.description}
-${selectedTone.style}
+Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Content Patterns to Use:
-${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
-
-Bio Structure:
-1. Hook: Use ${selectedTone.patterns[0]} to stand out
-2. Value: Highlight expertise using ${selectedTone.patterns[1]}
-3. Format: Apply ${selectedTone.patterns[2]} for impact
-
-Rules:
+Bio rules:
 - Max 160 characters
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
 - Include relevant keywords
-- Highlight expertise${profile.niche ? ' in niche' : ''}
-- Use appropriate terminology
+- Highlight niche expertise
+- Use industry-specific terms
 - Make it memorable
-- Add emojis if they fit (max 3)
+- Add emojis if they fit the tone (max 3)
 - Focus on unique value proposition
+- Keep it authentic to the tone and niche
 
-Remember: Create a compelling bio that positions me${profile.niche ? ` as a ${selectedNiche.name.toLowerCase()} expert` : ''} with ${selectedTone.name.toLowerCase()} style.`
+Remember: Create a compelling bio that positions me as a ${selectedNiche.name.toLowerCase()} expert in ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create a standout bio using these keywords: ${bioKeywords}
+          content: `Create a ${selectedTone.name.toLowerCase()} Twitter bio using these keywords: ${bioKeywords}
 
-Make sure to:
-1. Lead with impact
-2. Show clear expertise
-3. Include credibility markers
-4. Make it memorable`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make it stand out
+- Include key expertise
+- Stay true to the tone and niche`
         }
       ],
     })

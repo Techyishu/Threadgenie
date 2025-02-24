@@ -45,12 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    // Set default niche if none selected
-    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
-      name: "General",
-      description: "General content and thoughts",
-      topics: ["general", "thoughts", "insights"]
-    }
+    const selectedNiche = NICHES[profile.niche as NicheType]
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -62,13 +57,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { content, tone = 'viral', length = '5' } = await request.json()
-    
-    // Add validation for tone
-    if (!TONES[tone as ToneType]) {
-      return NextResponse.json({ error: 'Invalid tone selected' }, { status: 400 })
-    }
-    
+    const { content, tone = 'casual', length = '5' } = await request.json()
     const selectedTone = TONES[tone as ToneType]
 
     if (!content) {
@@ -84,45 +73,35 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-${profile.niche ? `Niche: ${selectedNiche.name}
+Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
+Key Topics: ${selectedNiche.topics.join(', ')}
 
-Content Style: ${selectedTone.name}
-${selectedTone.description}
-${selectedTone.style}
+Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Content Patterns to Use:
-${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
-
-Content Types to Focus On:
-${selectedTone.contentTypes.map(type => `- ${type}`).join('\n')}
-
-Thread Structure:
-1. Hook: Use ${selectedTone.patterns[0]} to grab attention
-2. Flow: Natural progression using ${selectedTone.patterns[1]} for engagement
-3. Format: Apply ${selectedTone.patterns[2]} throughout
-4. Close: Strong call-to-action or engagement prompt
-
-Rules:
+Thread rules:
 - Write exactly ${length} tweets
 - Max 280 chars per tweet
-- Stay within my expertise${profile.niche ? ' and niche' : ''}
-- Use relevant terminology
-- Keep content focused and valuable
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
+- Write exactly how I talk
+- Stay within my niche expertise
+- Use relevant terminology for my niche
+- Keep content aligned with my topic focus
+- Add emojis only if I use them (max 2 per tweet)
 - Add one empty line between tweets
 
-Remember: Create viral-worthy content in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
+Remember: Just me sharing my ${selectedNiche.name.toLowerCase()} expertise in ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create a ${length}-tweet thread about ${content} using the ${selectedTone.name.toLowerCase()} style.
+          content: `write a ${length}-tweet ${selectedTone.name.toLowerCase()} thread about ${content}
 
-Make sure to:
-1. Start with a powerful hook
-2. Maintain engagement throughout
-3. End with a strong call-to-action
-4. Stay authentic to my voice and expertise`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make sure tweets flow naturally
+- First tweet should grab attention
+- Stay consistent with tone throughout`
         }
       ],
     })

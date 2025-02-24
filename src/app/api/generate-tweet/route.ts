@@ -46,25 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Writing style not set' }, { status: 400 })
     }
 
-    const { tweetPrompt, tone = 'viral' } = await request.json()
-    
-    // Add validation for tone
-    if (!TONES[tone as ToneType]) {
-      return NextResponse.json({ error: 'Invalid tone selected' }, { status: 400 })
-    }
-    
-    const selectedTone = TONES[tone as ToneType]
-
-    if (!tweetPrompt) {
-      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
-    }
-
-    // Set default niche if none selected
-    const selectedNiche = profile.niche ? NICHES[profile.niche as NicheType] : {
-      name: "General",
-      description: "General content and thoughts",
-      topics: ["general", "thoughts", "insights"]
-    }
+    const selectedNiche = NICHES[profile.niche as NicheType]
 
     // Check generation limit
     const { canGenerate, remainingGenerations } = await checkGenerationLimit(user.id)
@@ -76,6 +58,13 @@ export async function POST(request: Request) {
       )
     }
 
+    const { tweetPrompt, tone = 'casual' } = await request.json()
+    const selectedTone = TONES[tone as ToneType]
+
+    if (!tweetPrompt) {
+      return NextResponse.json({ error: 'Missing prompt' }, { status: 400 })
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
@@ -85,43 +74,35 @@ export async function POST(request: Request) {
 
 ${profile.writing_style}
 
-${profile.niche ? `Niche: ${selectedNiche.name}
+Niche: ${selectedNiche.name}
 Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}` : ''}
+Key Topics: ${selectedNiche.topics.join(', ')}
 
-Content Style: ${selectedTone.name}
-${selectedTone.description}
-${selectedTone.style}
+Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Content Patterns to Use:
-${selectedTone.patterns.map(pattern => `- ${pattern}`).join('\n')}
-
-Content Types to Focus On:
-${selectedTone.contentTypes.map(type => `- ${type}`).join('\n')}
-
-Tweet Structure:
-1. Hook: Use ${selectedTone.patterns[0]} to capture attention
-2. Value: Deliver insight using ${selectedTone.patterns[1]}
-3. Format: Apply ${selectedTone.patterns[2]} for impact
-
-Rules:
+Tweet rules:
 - Max 280 characters
-- Stay within my expertise${profile.niche ? ' and niche' : ''}
-- Use relevant terminology
-- Keep content focused and valuable
-- Make it highly shareable
+- Match the ${selectedTone.name.toLowerCase()} tone perfectly
+- Write exactly how I talk
+- Stay within my niche expertise
+- Use relevant terminology for my niche
+- Keep content aligned with my topic focus
+- Add emojis only if appropriate for tone (max 2)
+- Make it attention-grabbing
+- Keep it authentic to the tone
 
-Remember: Create a viral-worthy tweet in my voice${profile.niche ? `, focusing on ${selectedNiche.name.toLowerCase()} expertise` : ''} with ${selectedTone.name.toLowerCase()} style.`
+Remember: One perfect tweet sharing my ${selectedNiche.name.toLowerCase()} expertise in ${selectedTone.name.toLowerCase()} style.`
         },
         {
           role: "user",
-          content: `Create an engaging tweet about: ${tweetPrompt}
+          content: `Write a ${selectedTone.name.toLowerCase()} tweet about: ${tweetPrompt}
 
-Make sure to:
-1. Use a powerful hook
-2. Deliver clear value
-3. Include engagement trigger
-4. Stay authentic to my voice`
+Style guide:
+- Match ${selectedTone.name.toLowerCase()} tone perfectly
+- ${selectedTone.style}
+- Make it engaging
+- Keep it concise
+- Stay true to the tone and niche`
         }
       ],
     })
