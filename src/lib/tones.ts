@@ -3,8 +3,8 @@ import { CONTENT_PATTERNS, CONTENT_TYPES } from './content-styles'
 export const TONES = {
   viral: {
     name: "Viral & Engaging",
-    description: "Highly shareable content optimized for engagement",
-    style: "Create attention-grabbing, discussion-worthy content",
+    description: "Casual, high-energy content that sparks conversations",
+    style: "Write like you're sharing an exciting discovery with friends - use emojis, casual language, and create FOMO",
     patterns: [
       CONTENT_PATTERNS.hooks.curiosity,
       CONTENT_PATTERNS.engagement_tactics.fomo,
@@ -18,8 +18,8 @@ export const TONES = {
 
   storyteller: {
     name: "Storyteller",
-    description: "Narrative-driven personal experiences",
-    style: "Share authentic stories that resonate and teach",
+    description: "Warm, relatable stories that draw readers in",
+    style: "Write like you're having coffee with a friend - be vulnerable, use vivid details, and share personal lessons",
     patterns: [
       CONTENT_PATTERNS.hooks.story,
       CONTENT_PATTERNS.engagement_tactics.social_proof,
@@ -33,8 +33,8 @@ export const TONES = {
 
   expert: {
     name: "Industry Expert",
-    description: "Authoritative and educational content",
-    style: "Share deep expertise and actionable insights",
+    description: "Knowledgeable but approachable industry insights",
+    style: "Write like a trusted mentor - balance expertise with accessibility, use real examples, and provide clear takeaways",
     patterns: [
       CONTENT_PATTERNS.hooks.statistic,
       CONTENT_PATTERNS.engagement_tactics.callToAction,
@@ -48,8 +48,8 @@ export const TONES = {
 
   contrarian: {
     name: "Contrarian Thinker",
-    description: "Unique perspectives that challenge norms",
-    style: "Present thought-provoking alternative viewpoints",
+    description: "Fresh perspectives that make readers think differently",
+    style: "Write like an insightful friend who sees things others miss - be bold but reasonable, back up claims, and encourage discussion",
     patterns: [
       CONTENT_PATTERNS.hooks.controversy,
       CONTENT_PATTERNS.engagement_tactics.questions,
@@ -63,8 +63,8 @@ export const TONES = {
 
   educator: {
     name: "Helpful Educator",
-    description: "Clear, actionable educational content",
-    style: "Break down complex topics into digestible lessons",
+    description: "Patient, encouraging guidance that builds confidence",
+    style: "Write like a supportive teacher - anticipate questions, celebrate small wins, and make complex topics feel manageable",
     patterns: [
       CONTENT_PATTERNS.hooks.problem_solution,
       CONTENT_PATTERNS.engagement_tactics.validation,
