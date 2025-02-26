@@ -2,7 +2,12 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth-provider'
-import { AuthModal } from '@/components/auth-modal'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the AuthModal with no SSR
+const AuthModal = dynamic(() => import('@/components/auth-modal').then(mod => mod.AuthModal), { 
+  ssr: false 
+})
 
 const inter = Inter({ subsets: ['latin'] })
 

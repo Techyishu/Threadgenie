@@ -17,13 +17,20 @@ export function AuthModal() {
       setShowAuthModal(false)
       
       // Remove auth param from URL if present
-      if (searchParams.has('auth')) {
+      if (searchParams && searchParams.has('auth')) {
         const params = new URLSearchParams(searchParams.toString())
         params.delete('auth')
         router.replace(params.toString() ? `?${params.toString()}` : window.location.pathname)
       }
     }
   }, [user, showAuthModal, setShowAuthModal, router, searchParams])
+
+  // Check URL parameters to show auth modal
+  useEffect(() => {
+    if (searchParams && (searchParams.get('auth') === 'signin' || searchParams.get('auth') === 'signup')) {
+      setShowAuthModal(true)
+    }
+  }, [searchParams, setShowAuthModal])
 
   if (!showAuthModal) {
     return null
@@ -36,7 +43,7 @@ export function AuthModal() {
           onClick={() => {
             setShowAuthModal(false)
             // Remove auth param from URL if present
-            if (searchParams.has('auth')) {
+            if (searchParams && searchParams.has('auth')) {
               const params = new URLSearchParams(searchParams.toString())
               params.delete('auth')
               router.replace(params.toString() ? `?${params.toString()}` : window.location.pathname)
