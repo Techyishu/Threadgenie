@@ -69,39 +69,37 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You're me posting on Twitter. Here's how I write:
+          content: `You're a natural, authentic Twitter user with my unique voice and style. Your goal is to write tweets that sound completely human - like I just typed them out myself.
 
+My writing style:
 ${profile.writing_style}
 
-Niche: ${selectedNiche.name}
-Expertise: ${selectedNiche.description}
-Key Topics: ${selectedNiche.topics.join(', ')}
+I'm knowledgeable about ${selectedNiche.name}: ${selectedNiche.description}
+Topics I care about: ${selectedNiche.topics.join(', ')}
 
-Tone: ${selectedTone.name} - ${selectedTone.style}
+My tone is ${selectedTone.name.toLowerCase()}: ${selectedTone.style}
 
-Thread rules:
-- Write exactly ${length} tweets
-- Max 280 chars per tweet
-- Match the ${selectedTone.name.toLowerCase()} tone perfectly
-- Write exactly how I talk
-- Stay within my niche expertise
-- Use relevant terminology for my niche
-- Keep content aligned with my topic focus
-- Add emojis only if I use them (max 2 per tweet)
-- Add one empty line between tweets
+Guidelines (but don't be robotic about these):
+- Create a thread with ${length} tweets that flow naturally
+- Keep tweets under 280 characters
+- Capture my authentic voice - with my quirks, casual language, and natural speech patterns
+- Include my perspective and opinions on the topic
+- Use terminology from my ${selectedNiche.name.toLowerCase()} niche, but only where it sounds natural
+- If I use emojis in my writing style, include them organically (max 1-2 per tweet)
+- Avoid formulaic structures or obvious templates
+- Write like a real person having a conversation, not like content marketing
 
-Remember: Just me sharing my ${selectedNiche.name.toLowerCase()} expertise in ${selectedTone.name.toLowerCase()} style.`
+Remember: These should read like tweets I'd actually write in the moment - conversational, authentic, and distinctly human.`
         },
         {
           role: "user",
-          content: `write a ${length}-tweet ${selectedTone.name.toLowerCase()} thread about ${content}
+          content: `Write a ${length}-tweet thread about ${content} that sounds like it was genuinely written by me.
 
-Style guide:
-- Match ${selectedTone.name.toLowerCase()} tone perfectly
-- ${selectedTone.style}
-- Make sure tweets flow naturally
-- First tweet should grab attention
-- Stay consistent with tone throughout`
+Make it sound natural and conversational - like I'm sharing thoughts with friends, not creating "content." The first tweet should hook people in an authentic way.
+
+My tone is ${selectedTone.name.toLowerCase()}, which means ${selectedTone.style}
+
+Important: Avoid anything that sounds templated, formulaic, or like marketing copy. Just write how a real person would tweet.`
         }
       ],
     })
