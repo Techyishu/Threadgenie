@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Create a response to modify
   let response = NextResponse.next()
 
   // Create a Supabase client for auth checks
@@ -28,11 +29,6 @@ export async function middleware(request: NextRequest) {
         },
         set(name: string, value: string, options: CookieOptions) {
           // This is used for setting cookies in the response
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
           response.cookies.set({
             name,
             value,
@@ -41,11 +37,6 @@ export async function middleware(request: NextRequest) {
         },
         remove(name: string, options: CookieOptions) {
           // This is used for removing cookies in the response
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
           response.cookies.set({
             name,
             value: '',
@@ -59,17 +50,17 @@ export async function middleware(request: NextRequest) {
   // Check if the user is authenticated
   const { data: { session }, error } = await supabase.auth.getSession()
 
-  // Define public routes that don't require authentication
-  const publicRoutes = ['/', '/about', '/pricing']
-  const isPublicRoute = publicRoutes.some(route => 
+  // Define protected routes that require authentication
+  const protectedRoutes = ['/dashboard', '/settings', '/profile', '/generate-thread']
+  const isProtectedRoute = protectedRoutes.some(route => 
     requestUrl.pathname === route || requestUrl.pathname.startsWith(route)
   )
 
   // Handle authentication logic
-  if (!session && !isPublicRoute) {
+  if (!session && isProtectedRoute) {
     // User is not authenticated and trying to access a protected route
-    // Redirect to home with a query parameter to trigger the login modal
-    return NextResponse.redirect(new URL('/?showLogin=true', request.url))
+    // Redirect to home page with a query parameter to show the auth modal
+    return NextResponse.redirect(new URL('/?auth=signin', request.url))
   }
 
   // Continue with the request

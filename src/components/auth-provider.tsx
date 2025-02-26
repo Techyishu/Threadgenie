@@ -10,8 +10,8 @@ type AuthContextType = {
   session: Session | null
   isLoading: boolean
   signOut: () => Promise<void>
-  showLoginModal: boolean
-  setShowLoginModal: (show: boolean) => void
+  showAuthModal: boolean
+  setShowAuthModal: (show: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,8 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   isLoading: true,
   signOut: async () => {},
-  showLoginModal: false,
-  setShowLoginModal: () => {},
+  showAuthModal: false,
+  setShowAuthModal: () => {},
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -38,14 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Check for showLogin query parameter
   useEffect(() => {
-    const showLogin = searchParams.get('showLogin')
-    if (showLogin === 'true') {
-      setShowLoginModal(true)
-      // Remove the query parameter from the URL without refreshing the page
-      const newUrl = window.location.pathname
-      window.history.replaceState({}, '', newUrl)
+    // Check if we should show the auth modal based on URL params
+    const authParam = searchParams.get('auth')
+    if (authParam === 'signin' || authParam === 'signup') {
+      setShowAuthModal(true)
     }
   }, [searchParams])
 
@@ -65,9 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session) {
           setSession(session)
           setUser(session.user)
-        } else {
-          // If no session, we might want to show the login modal
-          // depending on the current route (handled by middleware)
         }
       } catch (error) {
         console.error('Unexpected error during session check:', error)
@@ -81,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event)
         setSession(session)
         setUser(session?.user ?? null)
         
@@ -88,25 +83,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Clear any cached data
           router.refresh()
         } else if (event === 'SIGNED_IN') {
-          // Hide login modal when signed in
-          setShowLoginModal(false)
+          // Close the auth modal if it's open
+          setShowAuthModal(false)
+          // Refresh the page to ensure we have the latest data
           router.refresh()
         } else if (event === 'TOKEN_REFRESHED') {
-          // Session was refreshed, update the UI
+          // Session was refreshed successfully
+          router.refresh()
+        } else if (event === 'USER_UPDATED') {
+          // User was updated
           router.refresh()
         }
       }
     )
 
+    // Set up a timer to periodically check session validity
+    const sessionCheckInterval = setInterval(async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session && session) {
+        // Session has expired, update state
+        setSession(null)
+        setUser(null)
+        // Show auth modal if session expired
+        setShowAuthModal(true)
+      }
+    }, 5 * 60 * 1000) // Check every 5 minutes
+
     return () => {
       subscription.unsubscribe()
+      clearInterval(sessionCheckInterval)
     }
-  }, [supabase, router])
+  }, [supabase, router, session])
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    // After signing out, refresh the page to clear any user-specific data
-    router.refresh()
+    // Clear session and user state
+    setSession(null)
+    setUser(null)
+    // Redirect to home page
+    router.push('/')
   }
 
   return (
@@ -115,8 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session, 
       isLoading, 
       signOut,
-      showLoginModal,
-      setShowLoginModal
+      showAuthModal,
+      setShowAuthModal
     }}>
       {children}
     </AuthContext.Provider>
