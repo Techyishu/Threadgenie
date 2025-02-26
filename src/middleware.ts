@@ -1,81 +1,100 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  
-  // Skip middleware for API routes and public assets
-  if (
-    requestUrl.pathname.startsWith('/api') || 
-    requestUrl.pathname.startsWith('/_next') ||
-    requestUrl.pathname.startsWith('/favicon.ico') ||
-    requestUrl.pathname.startsWith('/public') ||
-    requestUrl.pathname.startsWith('/landing') ||
-    requestUrl.pathname === '/'
-  ) {
-    return NextResponse.next()
-  }
+  // Create a response object that we can modify
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // Create a response to modify
-  let response = NextResponse.next()
+  // Create the Supabase client
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: name.includes('refresh') ? 60 * 60 * 24 * 365 : undefined
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          response.cookies.delete({
+            name,
+            ...options,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true
+          })
+        },
+      },
+    }
+  )
+
+  const clearAuthCookies = (resp: NextResponse) => {
+    const cookiesToClear = [
+      'sb-access-token',
+      'sb-refresh-token',
+      'supabase-auth-token'
+    ]
+    
+    cookiesToClear.forEach(name => {
+      resp.cookies.delete({
+        name,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+      })
+    })
+  }
 
   try {
-    // Create a Supabase client for auth checks
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            // This is used for setting cookies in the response
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-          },
-          remove(name: string, options: CookieOptions) {
-            // This is used for removing cookies in the response
-            response.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-          },
-        },
-      }
-    )
-
-    // Check if the user is authenticated
+    // Get the session
     const { data: { session }, error } = await supabase.auth.getSession()
 
-    // Define protected routes that require authentication
-    const protectedRoutes = ['/dashboard', '/settings', '/profile', '/generate-thread']
-    const isProtectedRoute = protectedRoutes.some(route => 
-      requestUrl.pathname === route || requestUrl.pathname.startsWith(route)
-    )
-
-    // Handle authentication logic
-    if (!session && isProtectedRoute) {
-      // User is not authenticated and trying to access a protected route
-      // Redirect to home page with a query parameter to show the auth modal
-      return NextResponse.redirect(new URL('/?auth=signin', request.url))
+    // Clear all auth cookies if there's an error or no session
+    if (error || !session) {
+      clearAuthCookies(response)
     }
-  } catch (error) {
-    console.error('Middleware error:', error)
-    // If there's an error in the middleware, continue with the request
-    // This prevents build failures during static generation
-  }
 
-  // Continue with the request
-  return response
+    // Handle auth callback route specially
+    if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+      return response
+    }
+
+    // Handle API routes
+    if (request.nextUrl.pathname.startsWith('/api')) {
+      return response
+    }
+
+    // If user is signed in and trying to access landing page
+    if (session && request.nextUrl.pathname === '/landing') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    return response
+  } catch (error) {
+    console.error('Middleware auth error:', error)
+    const errorResponse = NextResponse.redirect(new URL('/', request.url))
+    clearAuthCookies(errorResponse)
+    return errorResponse
+  }
 }
 
-// Configure which paths the middleware runs on
 export const config = {
   matcher: [
     /*
@@ -83,8 +102,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - api routes
+     * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
