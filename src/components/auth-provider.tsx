@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const setupAuthListener = async () => {
       const { data } = await supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event: 'SIGNED_IN' | 'SIGNED_OUT' | 'USER_UPDATED' | 'TOKEN_REFRESHED', session: Session | null) => {
           setSession(session)
           setUser(session?.user ?? null)
           
