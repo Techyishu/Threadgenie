@@ -50,7 +50,7 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
     <div className="max-w-2xl mx-auto p-6 bg-[#1a1f2d] rounded-2xl border border-gray-800/50">
       <h2 className="text-2xl font-bold mb-4">Define Your Writing Style</h2>
       <p className="text-gray-400 mb-6">
-        Please write 300-400 words that best represent your writing style. This will help our AI generate content that matches your voice.
+        Please write 500-1000 words that best represent your writing style. This will help our AI generate content that matches your voice.
         You can write about any topic - the important thing is that it captures your natural writing style.
       </p>
 
@@ -59,12 +59,12 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
           <textarea
             value={writingStyle}
             onChange={handleChange}
-            className="w-full h-64 bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full h-96 bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Start writing here..."
             required
           />
           <div className="text-sm text-gray-400 mt-2">
-            {writingStyle.length} / 400 characters
+            {writingStyle.split(/\s+/).filter(Boolean).length} / 1000 words
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export function WritingStyleOnboarding({ onComplete }: { onComplete: () => void 
 
         <button
           type="submit"
-          disabled={loading || writingStyle.length < 300 || writingStyle.length > 400}
+          disabled={loading || writingStyle.split(/\s+/).filter(Boolean).length < 500 || writingStyle.split(/\s+/).filter(Boolean).length > 1000}
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : 'Save Writing Style'}
