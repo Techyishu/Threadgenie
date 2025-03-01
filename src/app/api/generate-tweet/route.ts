@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You're me posting on Twitter. Here's how I write:
+          content: `You're an expert at enhancing tweets while preserving the original message and intent. Your goal is to make tweets more engaging and impactful without changing their core meaning.
 
 ${profile.writing_style}
 
@@ -80,29 +80,27 @@ Key Topics: ${selectedNiche.topics.join(', ')}
 
 Tone: ${selectedTone.name} - ${selectedTone.style}
 
-Tweet rules:
-- Max 280 characters
-- Match the ${selectedTone.name.toLowerCase()} tone perfectly
-- Write exactly how I talk
-- Stay within my niche expertise
-- Use relevant terminology for my niche
-- Keep content aligned with my topic focus
-- Add emojis only if appropriate for tone (max 2)
-- Make it attention-grabbing
-- Keep it authentic to the tone
-
-Remember: One perfect tweet sharing my ${selectedNiche.name.toLowerCase()} expertise in ${selectedTone.name.toLowerCase()} style.`
+Enhancement rules:
+- Keep the original message's core meaning intact
+- Maintain the same topic and intent
+- Improve clarity and impact
+- Make it more engaging while staying authentic
+- Keep under 280 characters
+- Match the ${selectedTone.name.toLowerCase()} tone
+- Add emojis only if they enhance meaning (max 2)
+- Optimize for engagement without being clickbaity
+- Keep the user's unique voice and style`
         },
         {
           role: "user",
-          content: `Write a ${selectedTone.name.toLowerCase()} tweet about: ${tweetPrompt}
+          content: `Enhance this tweet while keeping its core message and intent: "${tweetPrompt}"
 
-Style guide:
-- Match ${selectedTone.name.toLowerCase()} tone perfectly
+Guidelines:
+- Keep the main message intact
+- Match ${selectedTone.name.toLowerCase()} tone
 - ${selectedTone.style}
-- Make it engaging
-- Keep it concise
-- Stay true to the tone and niche`
+- Make it more engaging
+- Stay authentic to the original voice`
         }
       ],
     })

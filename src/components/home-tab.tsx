@@ -11,8 +11,8 @@ const features = [
     link: "/?tab=thread-generator"
   },
   {
-    title: "Tweet Generator",
-    description: "Craft the perfect tweet that captures attention. Ideal for announcements, insights, and engaging your audience.",
+    title: "Tweet Enhancer",
+    description: "Make your tweets more engaging while keeping your original message intact. Perfect for improving impact and reach.",
     icon: "📝",
     color: "from-purple-600/20 to-pink-600/20 border-purple-500/20",
     link: "/?tab=tweet-generator"

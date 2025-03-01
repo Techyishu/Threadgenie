@@ -131,9 +131,9 @@ export function LandingPage() {
               </div>
               <span className="text-sm text-gray-500">02</span>
             </div>
-            <h3 className="text-xl font-medium text-white mb-3">Tweet Generator</h3>
+            <h3 className="text-xl font-medium text-white mb-3">Tweet Enhancer</h3>
             <p className="text-gray-400 mb-6">
-              Craft the perfect tweet that captures attention. Ideal for announcements, insights, and engaging your audience.
+              Make your tweets more engaging while keeping your original message intact. Perfect for improving impact and reach.
             </p>
             <div className="flex items-center text-sm text-gray-400">
               <span>Try it now</span>

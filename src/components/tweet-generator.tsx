@@ -45,23 +45,23 @@ export function TweetGenerator() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold">Tweet Generator</h3>
+        <h3 className="text-2xl font-bold">Tweet Enhancer</h3>
       </div>
 
       <div>
-        <p className="text-gray-400">Create engaging single tweets that capture attention.</p>
+        <p className="text-gray-400">Make your tweets more engaging while keeping your original message.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            What would you like to tweet about?
+            Your tweet
           </label>
           <textarea 
             value={tweetPrompt}
             onChange={(e) => setTweetPrompt(e.target.value)}
             className="w-full h-40 bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter your tweet topic or idea..."
+            placeholder="Enter your tweet to enhance..."
             required
           />
         </div>
@@ -97,7 +97,7 @@ export function TweetGenerator() {
           size="lg"
           fullWidth
         >
-          Generate Tweet
+          Enhance Tweet
         </Button>
       </form>
 
